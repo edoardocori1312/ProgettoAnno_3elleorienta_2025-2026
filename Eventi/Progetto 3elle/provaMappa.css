@@ -1,0 +1,310 @@
+/*
+  Commenti generali (in italiano) - provaMappa.css
+
+  Scopo del file:
+  - Contiene gli stili per la mini-mappa circolare, header/logo, area di ricerca,
+    le card centrali e il modal per le card.
+  - Le variabili CSS utili per la grafica sono indicate vicino al loro uso.
+
+  Suggerimenti rapidi per il design:
+  - Cambia `--mm-size` (sotto, dentro #map) per ridurre/aumentare la mini-mappa.
+  - Modifica `box-shadow`, `border` e `border-radius` per cambiare lo stile della mini-mappa.
+  - Le card usano `aspect-ratio: 1 / 1` per rimanere quadrate: cambia `width` per regolare la loro dimensione.
+  - Per adattare il layout ai dispositivi, i media query sono sotto; modificare le soglie per breakpoint diversi.
+*/
+
+/* reset base per la pagina */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* area mappa principale */
+/* mini-mappa circolare fissa (sempre circolare)
+   - Variabile principale: --mm-size (modifica qui per aumentare/diminuire la mappa)
+   - Per renderizzare bene all'interno di un cerchio: usiamo overflow:hidden e bordi.
+*/
+#map {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  --mm-size: 300px; /* dimensione predefinita (modifica questa per cambiare la mini-mappa) */
+  width: var(--mm-size);
+  height: var(--mm-size);
+  border-radius: 50%;
+  overflow: hidden; /* importante per mascherare i tiles in cerchio */
+  z-index: 9999;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  border: 4px solid rgba(255,255,255,0.95);
+  box-sizing: border-box;
+  background: #eaeaea;
+  pointer-events: auto;
+}
+
+/* Etichetta delle coordinate (sopra la mini-mappa). Si può nascondere o stilizzare.
+   - pointer-events: none permette di cliccare la mappa anche sopra l'etichetta.
+*/
+#map .coord-label {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  pointer-events: none; /* consente i click attraverso l'etichetta */
+  z-index: 10000;
+}
+.coord-label.hidden { display: none; }
+
+/* Contenitore di ricerca (input e suggerimenti) - posizionato sopra la mini-mappa
+   - Modifica la larghezza (width) per adattare il layout.
+   - Il bottom usa var(--mm-size) per non sovrapporsi alla mappa quando la dimensione cambia.
+*/
+.search-container {
+  /* Rendiamo la search parte del flusso della pagina invece di fissarla.
+     Ora l'input scorrerà con il contenuto e si adatterà alla larghezza del
+     contenitore. Impostiamo una larghezza massima per non eccedere su schermi
+     larghi e un margine per centrarla. */
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: 420px;
+  /* Spostiamo il contenitore verso destra e aggiungiamo padding interno a destra */
+  margin-top: 0;
+  margin-right: 20px;
+  margin-bottom: 16px;
+  margin-left: auto; /* spinge la search sul lato destro del contenitore */
+  padding-right: 12px;
+  z-index: auto;
+}
+
+/* Header sopra il filtro: logo a sinistra, menu a destra */
+.map-header, .site-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.map-header{ margin-bottom:8px; }
+.site-header{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:56px;
+  padding:6px 16px;
+  /* Sfondo navbar completamente bianco */
+  background: #ffffff;
+  z-index: 10002;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+.map-header .logo,
+.site-header .logo{
+  display:block;
+  height:40px; /* altezza del logo in header (non usata quando il logo è in footer) */
+  width:auto;
+}
+.map-header .header-menu, .site-header .header-menu{ flex: 0 0 48%; }
+.map-header .header-menu .form-select, .site-header .header-menu .form-select{ width:100%; }
+
+/* Footer che contiene il logo ridotto */
+.site-header{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:56px;
+  padding:6px 16px;
+  /* Sfondo navbar completamente bianco */
+  background: #ffffff;
+  z-index: 10002;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+.map-header .logo,
+.site-header .logo{
+  display:block;
+  height:40px; /* altezza del logo in header (non usata quando il logo è in footer) */
+  width:auto;
+}
+.map-header .header-menu, .site-header .header-menu{ flex: 0 0 48%; }
+.map-header .header-menu .form-select, .site-header .header-menu .form-select{ width:100%; }
+
+/* Assicura che la pagina non venga coperta dall'header fisso */
+body{ padding-top: 68px; }
+
+/* Logo ridotto nel header */
+.site-header .logo{ height:36px; }
+
+/* Riporta la mini-mappa alla sua distanza originale dal fondo */
+#map { bottom: 20px; }
+
+/* sposta leggermente la search-container più in basso se il header è fissato in alto */
+.search-container{ padding-top:8px; }
+
+/* Stili per le card centrali sotto il filtro
+   - Le card sono quadrate grazie ad `aspect-ratio: 1 / 1`.
+   - Cambia `width` su `.info-card` per aumentare/diminuire il loro ingombro.
+   - L'immagine occupa il 65% dell'altezza: modifica `flex: 0 0 65%` per cambiare il bilanciamento immagine/testo.
+*/
+.cards-wrapper{
+  max-width: 1100px;
+  margin: 20px auto 36px auto; /* centrata orizzontalmente, più spazio verticale */
+  display:flex;
+  gap:20px; /* spazio tra le card */
+  justify-content:center;
+  flex-wrap:wrap;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+.info-card{
+  width: 320px; /* card più grandi - regola questa dimensione per la grafica */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  display:flex;
+  flex-direction:column;
+  aspect-ratio: 1 / 1; /* mantiene il quadrato */
+}
+.info-card + .info-card{ margin-left: 0; }
+.info-card .card-img-top{
+  width:100%;
+  height: auto;
+  flex: 0 0 65%; /* immagine occupa il 65% dell'altezza del quadrato */
+  object-fit:cover; /* utile per crop responsivo dell'immagine */
+}
+.info-card .card-body{
+  flex: 1 1 35%;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+.info-card .card-title{ font-size:1.05rem; margin:0 0 6px 0; }
+.info-card .card-text{ font-size:0.95rem; margin:0; color:#444; }
+
+/* Modal semplice per le card
+   - Il modal è un semplice layer centrato con backdrop.
+   - `aria-hidden` viene usato per mostrare/nascondere il modal dal JS.
+   - `z-index` è settato per garantire che il pulsante di chiusura sia cliccabile.
+*/
+.card-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:12000;
+}
+.card-modal[aria-hidden="false"]{ display:flex; }
+.card-modal-backdrop{
+  position:absolute; inset:0; background:rgba(0,0,0,0.45);
+}
+.card-modal-inner{
+  position:relative;
+  width:min(920px, 94%);
+  max-height:90vh;
+  background:#fff;
+  border-radius:8px;
+  overflow:auto;
+  box-shadow:0 12px 40px rgba(0,0,0,0.3);
+  z-index:12001;
+  display:flex;
+  gap:12px;
+  padding:16px;
+  align-items:flex-start;
+}
+.card-modal-close{
+  position:absolute; right:8px; top:6px; background:transparent; border:0; font-size:28px; line-height:1; cursor:pointer;
+  z-index:12002; /* assicurati che il pulsante sia cliccabile sopra gli altri layer */
+}
+.modal-img{ max-width:420px; width:40%; height:auto; border-radius:6px; object-fit:cover; }
+.modal-content{ width:60%; padding:8px; }
+.modal-content h4{ margin:0 0 8px 0; }
+.modal-content p{ margin:0; color:#333; }
+
+@media (max-width:700px){
+  .card-modal-inner{ flex-direction:column; }
+  .modal-img{ width:100%; max-width:none; }
+  .modal-content{ width:100%; }
+}
+
+@media (max-width: 900px){
+  .info-card{ width: 48%; }
+}
+@media (max-width: 600px){
+  .cards-wrapper{ gap:10px; }
+  .info-card{ width: 100%; }
+}
+
+/* usa Bootstrap per lo stile dell'input e della list-group; limitiamo solo altezza/spaziature */
+.search-container .input-group { width: 100%; }
+.search-container .list-group { max-height: 240px; overflow: auto; }
+
+@media (max-width: 480px){
+  /* Su schermi piccoli la search usa quasi tutta la larghezza disponibile */
+  .search-container{ max-width: 92%; margin: 0 auto 12px auto; padding-top:8px; }
+}
+
+/* nascondi attributi/scala all'interno della mini-mappa per risparmiare spazio */
+#map .leaflet-control-attribution,
+#map .leaflet-control-scale { display: none !important; }
+
+@media (max-width: 480px) {
+  #map { --mm-size: 220px; bottom: 12px; right: 12px; }
+}
+
+/* Nascondi la mini-mappa su dispositivi diversi dal PC (tablet e mobile).
+   Assunzione: dispositivi non-desktop hanno larghezza viewport <= 1024px.
+   Cambia il valore se vuoi un breakpoint differente. */
+@media (max-width: 1024px) {
+  #map { display: none !important; }
+}
+
+/* semplice pannello di controllo sopra la mappa */
+.map-controls {
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.95);
+  border-bottom: 1px solid #ddd;
+  font-family: Arial, sans-serif;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.map-controls input[type="text"]{ padding:4px 6px; }
+.map-controls button{ padding:6px 10px; cursor:pointer; }
+
+.note { color:#555; font-size:0.9rem; }
+
+/* nascondi la attribuzione se vuoi in ambienti embedded, altrimenti lasciala */
+#map .leaflet-control-attribution { font-size: 10px; }
+
+/* Override finale: forziamo il logo nell'header a non eccedere e non deformare il layout */
+.site-header{
+  max-height:76px; /* altezza massima dell'header */
+  overflow:hidden; /* evita che il logo esca dall'header */
+}
+.site-header .logo{
+  display:block;
+  max-height:48px; /* non più grande di 48px */
+  height:auto !important;
+  width:auto;
+  max-width:220px; /* evita che occupi tutta la larghezza */
+  object-fit:contain;
+}
+.logo-wrap{ display:flex; align-items:center; gap:8px; }
+
+/* Riduci ulteriormente il logo su schermi piccoli */
+@media (max-width:480px){
+  .site-header{ padding:6px 10px; }
+  .site-header .logo{ max-height:32px; max-width:160px; }
+  body{ padding-top: 56px; }
+}
