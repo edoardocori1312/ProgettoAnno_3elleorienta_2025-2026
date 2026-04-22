@@ -3,7 +3,7 @@ session_start();
 
 if($_POST)
 {
-    if (validaInput($_POST["email"], $_POST["password"])) 
+    if (validaInput($_POST["email"], $_POST["password"]) && $_POST["email"] != "" && $_POST["password"] != "") 
     {
         include("controlloLogin.php");
     }else
