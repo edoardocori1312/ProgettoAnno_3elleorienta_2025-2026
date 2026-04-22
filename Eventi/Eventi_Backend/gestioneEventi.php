@@ -1,6 +1,5 @@
 <?php 
-    class risultato //classe risultato ritornata in output
-    {
+    class risultato { //classe risultato ritornata in output
         public ?string $errore = null;
         public $result = null;
 
@@ -10,7 +9,7 @@
         }
     }
 
-    $file_connessione = "connessione.php";
+    $file_connessione = "db.php";
     @include($file_connessione); //includo il file, warning soppressi (error handling nella funzione)
 
     //controlla il risultato, ritorna true se il risultato è valido
@@ -27,11 +26,11 @@
 
 
     function bindParams($stmt, $types, array $values) {
-    if ($types != "") {
-        // L'operatore ... spacchetta l'array in argomenti singoli
-        $stmt->bind_param($types, ...$values);
+        if ($types != "") {
+            // L'operatore ... spacchetta l'array in argomenti singoli
+            $stmt->bind_param($types, ...$values);
+        }
     }
-}
     
     //filtri: generale, titolo, target, range date
     function filtriVisualizza($statement, $conn, $idUtente, $tipoRicerca, $titolo, $desc, $target, $data_inizio, $data_fine, $citta){
@@ -43,24 +42,11 @@
         $conditions = [];
         $values = [];
 
+
         // Acquisisco utente
-        $sql = "SELECT tipo, cod_scuola FROM utenti WHERE ID_utente = ?";
-        if($stmt = $conn->prepare($sql)){ 
-            
-            $stmt->bind_param("i", $idUtente);
+        $utente = GetScuolaRuoloUtente($idUtente, $conn);
 
-            if($stmt->execute()) { 
-                $res = $stmt->get_result();
-                if(!$utente = $res->fetch_object()){
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-
+        
         // JOIN città
         if($citta != null){
             if($tipoRicerca == true){
@@ -120,7 +106,7 @@
             $values[] = "%".$citta."%";
         }
 
-        // costruzione query finale (UN SOLO WHERE)
+        // costruzione query finale
         if(count($conditions) > 0){
             if($tipoRicerca){
                 $query .= " WHERE " . implode(" AND ", $conditions);
@@ -131,28 +117,17 @@
 
 
 
-
-        var_dump($statement);
-        var_dump($res);
-        var_dump($utente);
-        var_dump($query);
-        var_dump($values);
-
-        //costruzione filtri
-
-
         if(!$statement=$conn->prepare($query)){ //controllo creazione statement
             return false;
         }
-        var_dump($statement);
+
 
         bindParams($statement, $params, $values);
         return $statement;
     }
 
 
-    function visualizzaEventi($idUtente, $tipoRicerca, $titolo, $desc, $target, $data_inizio, $data_fine, $citta)
-    {
+    function visualizzaEventi($idUtente, $tipoRicerca, $titolo, $desc, $target, $data_inizio, $data_fine, $citta) {
         
         $risultato = new risultato(); //creo oggetto risultato
         
@@ -213,11 +188,9 @@
     //viene concessa la modifica solo se i codici coincidono, altrimenti viene inviato un errore nell'oggetto risultato
 
 
-    function inserisciEvento($idUtente, $titolo, $descrizione, $target, $ora_inizio, $ora_fine, $visibile, $prenotabile, $via_P, $n_civico_P, $coordinate, $descrizioneBreve)
+    function inserisciEvento($idUtente, $cod_scuola, $titolo, $descrizione, $target, $ora_inizio, $ora_fine, $visibile, $prenotabile, $via_P, $n_civico_P, $coordinate, $descrizioneBreve)
     {
         $risultato = new risultato(); 
-
-        
 
         $res = null; 
 
@@ -225,57 +198,71 @@
         $conn = new mysqli ($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
         $stmt = null;
 
-        if(!$validaCampi())
+        if(!$validaCampi()) //------------------------------------------------------------------- da fare valida campi
         {
-            $risultato->errore = "Errore nei campi"; 
+            $risultato->errore = "Errore nei campi";
+            return $risultato;
+        }
+        
+        $dati = GetScuolaRuoloUtente($idUtente, $conn); 
+        $ruolo = $dati->tipo;
+        $cod = $dati->cod_scuola;
+        if($ruolo == "ADMIN")
+        {
+            if(!$cod_scuola == null){
+                $IsValid = IsValidSchool($cod_scuola)
+                if($IsValid == null){
+                    $risultato->errore = "errore nella verifica del codice meccanografico";
+                    return $risultato;
+                }
+                if($IsValid){
+                    $cod = $cod_scuola;
+                }
+            }
+        }
+        else if ($ruolo == null)
+        {
+            $risultato->errore = "errore nel trovare il ruolo dell'utente";
+            return $risultato; 
+        }
+
+        $isScolastico = false;
+        if($target == "SCOLASTICO"){
+            $isScolastico = true;
+        }
+
+        //---------------------------------------------------------------------------------------------aggiungere gestione gestione target scolastico
+
+        $sql = "insert into eventi (titolo, descrizione, target, ora_inizio, ora_fine, visibile, prenotabile, via_P, n_civico_P, coordinate, descrizione_breve) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+            
+        if($stmt === false)
+        {
+            $risultato->errore = "errore nella preparazione dello statement";
+        }
+
+        $stmt->bind_param("sssssiisiss", $titolo, $secrizione, $target, $ora_inizio, $ora_fine, $visibile, $prenotabile, $via_P, $n_civico_P, $coordinate, $descrizioneBreve); 
+
+        if(!$stmt->execute())
+        {
+            $risultato->errore = "errore nell'esecuzione dello statement"; 
         }
         else
         {
-            $ruoloUtente = ruoloUtente($idUtente, $conn); 
-            if($ruoloUtente == "ADMIN")
-            {
-                
-                
-            }   
-            else if ($ruoloUtente == "SCOLASTICO")
-            {
-                
-            }
-            else if ($ruoloUtente == null)
-            {
-                $risultato->errore = "errore nel trovare il ruolo dell'utente"; 
-            }
-
-            $sql = "insert into eventi (titolo, descrizione, target, ora_inizio, ora_fine, visibile, prenotabile, via_P, n_civico_P, coordinate, descrizione_breve) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            
-            if($stmt === false)
-            {
-                $risultato->errore = "errore nella preparazione dello statement";
-            }
-
-            $stmt->bind_param("sssssiisiss", $titolo, $secrizione, $target, $ora_inizio, $ora_fine, $visibile, $prenotabile, $via_P, $n_civico_P, $coordinate, $descrizioneBreve); 
-
-            if(!$stmt->execute())
-            {
-                $risultato->errore = "errore nell'esecuzione dello statement"; 
-            }
-            else
-            {
-                $res = $stmt->get_result(); 
-            }
-            if(controlloRisultato($res))
-            {
-                $risultato->result = $res; 
-            }
-            else
-            {
-                $risultato->errore = "La query ha ritornato un risultato non valido"; 
-            }
-            $stmt->close(); 
-            $conn->close(); 
-            return $risultato; 
+            $res = $stmt->get_result(); 
         }
+           if(controlloRisultato($res))
+        {
+            $risultato->result = $res; 
+        }
+        else
+        {
+            $risultato->errore = "La query ha ritornato un risultato non valido"; 
+        }
+        $stmt->close(); 
+        $conn->close(); 
+        return $risultato; 
+        
     }
 
     function modificaEvento($idUtente, $idEvento, $titolo, $descrizione, $target, $ora_inizio, $ora_fine, $visibile, $prenotabile, $via_P, $n_civico_P, $coordinate, $descrizioneBreve)
@@ -433,30 +420,26 @@
         
     }
 
-    function ruoloUtente($idUtente, $conn)
-    {
-        $sql = "select tipo from utenti where ID_utente = ?";
-        if($stmt = $conn->prepare($sql))
-            { 
+    //ritorna il ruolo e codice scuola di un utente
+    function GetScuolaRuoloUtente($idUtente, $conn) {
+        $sql = "SELECT tipo, cod_scuola FROM utenti WHERE ID_utente = ?"; //------------------------------------------------- da usare procedura
+        if($stmt = $conn->prepare($sql)){ 
             
             $stmt->bind_param("i", $idUtente);
 
-            if($stmt->execute()) 
-            { 
+            if($stmt->execute()) { 
                 $res = $stmt->get_result();
-                $utente = $res->fetch_object(); 
-                return $utente->tipo; 
-                
-            } 
-            else 
-            {
-                return null;
+                if(!$utente = $res->fetch_object()){
+                    return false;
+                }
+            } else {
+                return false;
             }
-        } 
-        else 
-        {
-            return null;
-        } 
+        } else {
+            return false;
+        }
+
+        return $utente;
     }
 
     function coordinateScuola($conn, $idUtente)
@@ -480,7 +463,7 @@
             if(!$stmt->execute())
             {
                 $risultato->errore = "errore nell'esecuzione dello statement"; 
-                return 
+                return;
             }
             else
             {
@@ -542,7 +525,36 @@
 
     }
 
+    function IsValidSchool($cod, $conn){
+        $sql="SELECT 1 AS res
+              FROM scuole
+              WHERE COD_meccanografico = ?";
 
+        if($stmt = $conn->prepare($sql)){
+            $stmt->bind_param("s", $cod);
+
+            if($stmt->execute()) 
+            { 
+                $res = $stmt->get_result();
+                $risultato = $res->fetch_object(); 
+                if($risultato->res == 1){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            } 
+            else 
+            {
+                return null;
+            }
+        }
+        else{
+            return null;
+        }
+        
+        
+    }
 
 
     
