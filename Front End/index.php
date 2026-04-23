@@ -1,3 +1,8 @@
+<?php
+include("daticonnessione.php"); //includere i dati connessione php
+include("navbar.html");
+?>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -13,9 +18,19 @@
 
 <body>
 
-<?php include("navbar.html"); ?>
+<?php
+include("navbar.html");
 
-<!-- ===== HERO CAROUSEL ===== -->
+$logo_svelati = "logo_un_po_piu_grande.jpg"; // fallback locale
+
+$sql = "SELECT f.path_foto FROM Progetti p JOIN Foto f ON f.ID_foto = p.id_foto WHERE p.n_ordine = 1 AND p.data_eliminazione IS NULLAND f.data_eliminazione IS NULL LIMIT 1";
+
+$result = $conn->query($sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $logo_svelati = "https://" . $row["path_foto"];
+}
+?>
+
 <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
   <div class="carousel-inner">
 
@@ -60,18 +75,16 @@
 </div>
 
 
-<!-- ===== SEZIONE PROGETTO ===== -->
+
 <section class="section-progetto">
   <h3>Progetto per l'orientamento</h3>
 
   <div class="progetto-inner">
 
-    <!-- Logo più grande a sinistra -->
     <div class="progetto-logo">
-      <img src="logo_un_po_piu_grande.jpg" alt="Logo Svelati">
+      <img src="<?php echo htmlspecialchars($logo_svelati); ?>" alt="Logo Svelati">
     </div>
 
-    <!-- Testo + pulsanti a destra -->
     <div class="progetto-text">
       <div class="progetto-title">SVELATI</div><br>
       <div class="progetto-subtitle">Piattaforma 3elleorienta</div>
@@ -85,8 +98,6 @@
   </div>
 </section>
 
-
-<!-- ===== SEZIONE AMBITI ===== -->
 <section class="section-ambiti">
   <h3>I nostri ambiti</h3>
 
