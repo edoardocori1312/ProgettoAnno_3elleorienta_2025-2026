@@ -19,7 +19,7 @@ include("navbar.html");
 <body>
 
 <?php
-include("navbar.html");
+
 
 $logo_svelati = "logo_un_po_piu_grande.jpg"; // fallback locale
 
