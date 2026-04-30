@@ -23,7 +23,7 @@ include("navbar.html");
 
 $logo_svelati = "logo_un_po_piu_grande.jpg"; // fallback locale
 
-$sql = "SELECT f.path_foto FROM Progetti p JOIN Foto f ON f.ID_foto = p.id_foto WHERE p.n_ordine = 1 AND p.data_eliminazione IS NULLAND f.data_eliminazione IS NULL LIMIT 1";
+$sql = "SELECT f.path_foto FROM Progetti p JOIN Foto f ON f.ID_foto = p.id_foto WHERE p.n_ordine = 1 AND p.data_eliminazione IS NULL AND f.data_eliminazione IS NULL LIMIT 1";
 
 $result = $conn->query($sql);
 if ($result && $row = $result->fetch_assoc()) {
