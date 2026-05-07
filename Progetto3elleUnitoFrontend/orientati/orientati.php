@@ -1,7 +1,7 @@
 <?php
 session_start();
-include("../../Backend/config/db.php");
-$conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
+include("dati_connessione.php");
+$conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NAMEDB);
 
 // --- Filtri ---
 $filtro_ambito = isset($_GET['ambito']) ? (int)$_GET['ambito'] : 0;
@@ -18,60 +18,24 @@ $zone = [];
 $res = $conn->query("SELECT ID_zona, nome FROM zone ORDER BY nome");
 while ($r = $res->fetch_object()) { $zone[] = $r; }
 
-// --- Link extra per scuola (hardcoded) ---
-$extra_links = [
-    'MCRH01000R' => [
-        ['label' => 'Sito della scuola',   'url' => 'https://www.ipseoavarnelli.edu.it/', 'icon' => 'bi-globe'],
-    ],
-    'ANSD01001R' => [
-        ['label' => 'Sito della scuola',   'url' => 'https://www.liceoartisticomannucci.edu.it', 'icon' => 'bi-globe'],
-        ['label' => 'Instagram',            'url' => 'https://www.instagram.com/liceo.artistico.jesi/', 'icon' => 'bi-instagram'],
-        ['label' => 'Video presentazione', 'url' => 'https://www.instagram.com/tv/CWoMti0jlqa/', 'icon' => 'bi-play-circle'],
-    ],
-    'ANIS022006' => [
-        ['label' => 'Sito della scuola',        'url' => 'https://www.cupparisalvati.it', 'icon' => 'bi-globe'],
-        ['label' => 'Brochure PDF',              'url' => 'https://www.cupparisalvati.edu.it/orientamento/documenti/presentazione_cuppari-salvati.pdf', 'icon' => 'bi-file-earmark-pdf'],
-        ['label' => 'Video indirizzi economici', 'url' => 'https://www.facebook.com/itet.cuppari.5/videos/846425802775985/', 'icon' => 'bi-facebook'],
-        ['label' => 'Video corso Turismo',       'url' => 'https://www.facebook.com/itet.cuppari.5/videos/851392945612604', 'icon' => 'bi-facebook'],
-        ['label' => 'Video corso CAT',           'url' => 'https://www.facebook.com/itet.cuppari.5/videos/851303348954897', 'icon' => 'bi-facebook'],
-    ],
-    'ANIS02100A' => [
-        ['label' => 'Sito della scuola',             'url' => 'http://www.iisgalileijesi.it/', 'icon' => 'bi-globe'],
-        ['label' => 'Pagina orientamento',           'url' => 'http://www.iisgalileijesi.it/orientamento-in-ingresso/', 'icon' => 'bi-compass'],
-        ['label' => 'Video Liceo Economico Sociale', 'url' => 'https://www.youtube.com/watch?v=wGL1q4vozQ4', 'icon' => 'bi-youtube'],
-        ['label' => 'Video Biotecnologie',           'url' => 'https://www.youtube.com/watch?v=d_Oa7DbUKvU', 'icon' => 'bi-youtube'],
-        ['label' => 'Depliant informativo',          'url' => 'https://drive.google.com/file/d/1DW-ucUAR7FFLYkimyiq8D6HKcO3vEE1c/view', 'icon' => 'bi-file-earmark-text'],
-    ],
-    'ANIS023002' => [
-        ['label' => 'Sito della scuola',            'url' => 'https://www.iismarconipieralisi.it/', 'icon' => 'bi-globe'],
-        ['label' => 'Depliant PDF',                  'url' => 'https://www.iismarconipieralisi.edu.it/images/docs/brochure/iis_marconipieralisi-jesi_depliant-indirizzi_10-2025.pdf', 'icon' => 'bi-file-earmark-pdf'],
-        ['label' => 'Video Informatica',             'url' => 'https://youtu.be/77W_WRkAIgA', 'icon' => 'bi-youtube'],
-        ['label' => 'Video Elettronica/Automazione', 'url' => 'https://youtu.be/2s_d5H2jzUM', 'icon' => 'bi-youtube'],
-        ['label' => 'Video Meccatronica',            'url' => 'https://youtu.be/6Tyt4Ff1EUM', 'icon' => 'bi-youtube'],
-        ['label' => 'Video Moda',                    'url' => 'https://youtu.be/mTOl5Gt9yu8', 'icon' => 'bi-youtube'],
-        ['label' => 'Video Manutenzione',            'url' => 'https://youtu.be/HgtkLSlN2oI', 'icon' => 'bi-youtube'],
-    ],
-    'ANPC060007' => [
-        ['label' => 'Sito della scuola',   'url' => 'https://liceoclassicojesi.edu.it/', 'icon' => 'bi-globe'],
-        ['label' => 'Video presentazione', 'url' => 'https://youtu.be/-IMNRDxBBd8', 'icon' => 'bi-youtube'],
-    ],
-    'ANPS040005' => [
-        ['label' => 'Sito della scuola', 'url' => 'https://www.liceodavincijesi.edu.it/', 'icon' => 'bi-globe'],
-    ],
-];
+// --- Link per scuola dal DB ---
+$extra_links = [];
+$res_links = $conn->query("SELECT cod_scuola, titolo, url_link, icon FROM links WHERE data_eliminazione IS NULL ORDER BY n_ordine ASC");
+while ($r = $res_links->fetch_object()) {
+    $extra_links[$r->cod_scuola][] = [
+        'label' => $r->titolo,
+        'url'   => $r->url_link,
+        'icon'  => $r->icon,
+    ];
+}
 
 // -------------------------------------------------------
 // Query scuole
-// Logica bind: i ? nella query devono rispettare l'ordine:
-//   1. EXISTS ambito  (se filtro_ambito > 0)
-//   2. zona           (se filtro_zona > 0)
-//   3. testo LIKE     (se filtro_testo != '')
 // -------------------------------------------------------
 $where_parts = ["1=1"];
 $bind_types  = "";
 $bind_params = [];
 
-// Ambito: subquery EXISTS, il ? va prima degli altri
 $ambito_sql = "";
 if ($filtro_ambito > 0) {
     $ambito_sql   = "AND EXISTS (
@@ -83,14 +47,12 @@ if ($filtro_ambito > 0) {
     $bind_params[] = $filtro_ambito;
 }
 
-// Zona
 if ($filtro_zona > 0) {
     $where_parts[] = "c.id_zona = ?";
     $bind_types   .= "i";
     $bind_params[] = $filtro_zona;
 }
 
-// Testo
 if ($filtro_testo !== '') {
     $where_parts[] = "s.nome LIKE ?";
     $bind_types   .= "s";
@@ -180,13 +142,14 @@ foreach ($scuole as $scuola) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orientati – Svelati</title>
-    <link rel="stylesheet" href="../stile/stile.css">
+    <link rel="stylesheet" href="stile.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="stileOrientati.css">
 </head>
 <body>
 
-<?php include("../stile/navbar.html"); ?>
+<?php include("navbar.html"); ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
@@ -371,7 +334,6 @@ function toggleCard(id) {
     document.getElementById(id).classList.toggle('open');
 }
 
-// Auto-apre la card se arriva il parametro ?open=COD da ambiti.php
 (function() {
     const params = new URLSearchParams(window.location.search);
     const openCod = params.get('open');
@@ -380,7 +342,6 @@ function toggleCard(id) {
         const card = document.getElementById(cardId);
         if (card) {
             card.classList.add('open');
-            // Scroll alla card con un piccolo ritardo per lasciar rendere la pagina
             setTimeout(function() {
                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 150);
