@@ -1,0 +1,27 @@
+.card-panel {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table-responsive {
+    border-radius: 0.5rem;
+}
+
+/* Gestione della descrizione */
+.table td > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px; 
+}
+
+/* Spaziatura dei bottoni */
+.btn-group {
+    gap: 0.25rem;
+}
+
+.delete-date-cell {
+    vertical-align: middle;
+}
