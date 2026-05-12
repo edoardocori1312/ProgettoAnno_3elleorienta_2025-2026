@@ -3,7 +3,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$username    = $_SESSION["usernameUtente"] ?? 'Utente';
+// controlloSessione: se la sessione non è valida reindirizza al login
+if (!isset($_SESSION["emailUtente"])) {
+    header("Location: ../../PROGETTOV13/login.php");
+    exit;
+}
+
+$emailUtente = $_SESSION["emailUtente"];
+$username    = $_SESSION["usernameUtente"];
+$idUtente    = $_SESSION["idUtente"];
+$ruoloUtente = $_SESSION["ruoloUtente"];
 
 require '../config/db.php';
 require 'backend/gestione_zone.php';
@@ -55,6 +64,11 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../style/style.css">
     <link rel="stylesheet" href="../style/Progettistyle.css">
+    <style>
+    .table-zone th  { font-size:.78rem; text-transform:uppercase; letter-spacing:.8px; color:#7f8c8d; }
+    .table-zone td  { font-size:.88rem; vertical-align:middle; }
+    .section-title  { font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:#7f8c8d; font-weight:600; margin-bottom:16px; }
+    </style>
 </head>
 <body>
 
@@ -71,7 +85,7 @@ $conn->close();
 
     <nav class="nav-group mt-2">
         <div class="nav-label">SCUOLA</div>
-        <a href="../index.php" class="nav-link">
+        <a href="scuole.php" class="nav-link">
             <i class="bi bi-backpack-fill"></i>
             <span class="link-text">Scuola</span>
         </a>
@@ -133,83 +147,122 @@ $conn->close();
 
     <main class="page-content">
 
-        <p class="fw-bold fs-5 mb-1" style="color:#2c3e50;">Gestione Zone</p>
-        <p class="text-secondary mb-4" style="font-size:0.82rem;">Aggiungi, modifica o elimina le zone dal sistema.</p>
-
         <?php if ($flash): ?>
-            <div class="alert alert-<?php echo $flash['tipo'] === 'successo' ? 'success' : 'danger'; ?> alert-dismissible fade show py-2" role="alert">
-                <?php echo htmlspecialchars($flash['msg']); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+        <div class="alert alert-<?php echo $flash['tipo'] === 'successo' ? 'success' : 'danger'; ?> alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-<?php echo $flash['tipo'] === 'successo' ? 'check-circle-fill' : 'exclamation-triangle-fill'; ?> me-2"></i>
+            <?php echo htmlspecialchars($flash['msg']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
         <?php endif; ?>
 
-        <div class="card-panel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold mb-0" style="color:#2c3e50;">
-                    <i class="bi bi-geo-fill me-1"></i> Lista Zone
-                </h6>
-                <button class="btn btn-primary btn-sm d-flex align-items-center gap-1"
-                        data-bs-toggle="modal" data-bs-target="#modalAggiungiZona">
-                    <i class="bi bi-plus-lg"></i> Aggiungi zona
-                </button>
+        <!-- ═══ MODALE CONFERMA ELIMINAZIONE ═══ -->
+        <div class="modal fade" id="modalElimina" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h6 class="modal-title text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>Conferma Eliminazione
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p id="modal-elimina-msg" class="mb-1" style="font-size:.9rem;"></p>
+                        <p class="text-danger mb-0" style="font-size:.82rem;">
+                            <i class="bi bi-info-circle me-1"></i>L'operazione non è reversibile.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
+                        <form id="form-elimina" method="POST" action="zona.php" style="display:inline">
+                            <input type="hidden" name="id_zona" id="modal-id-zona" value="">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash-fill me-1"></i>Elimina
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="width:70px;">ID</th>
-                            <th>Nome</th>
-                            <th class="text-end" style="width:180px;">Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (!empty($zone)): ?>
-                        <?php foreach ($zone as $row): ?>
-                            <?php
-                                $id     = (int)$row['ID_zona'];
-                                $nome   = htmlspecialchars($row['nome']);
-                                $nomeJs = addslashes($row['nome']);
-                            ?>
-                            <?php if (isset($_GET['modifica']) && (int)$_GET['modifica'] === $id): ?>
-                                <form id="form-mod-<?php echo $id; ?>" method="POST" style="display:none">
-                                    <input type="hidden" name="id" value="<?php echo $id; ?>">
-                                    <input type="hidden" name="modifica" value="1">
-                                </form>
-                                <tr>
-                                    <td><?php echo $id; ?></td>
-                                    <td>
-                                        <input type="text" name="nome" value="<?php echo $nome; ?>"
-                                               class="form-control form-control-sm"
-                                               form="form-mod-<?php echo $id; ?>" required>
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="submit" form="form-mod-<?php echo $id; ?>"
-                                                class="btn btn-success btn-sm">Salva</button>
-                                        <a href="zona.php" class="btn btn-secondary btn-sm">Annulla</a>
-                                    </td>
-                                </tr>
-                            <?php else: ?>
-                                <tr>
-                                    <td><?php echo $id; ?></td>
-                                    <td><?php echo $nome; ?></td>
-                                    <td class="text-end">
-                                        <a href="?modifica=<?php echo $id; ?>" class="btn btn-primary btn-sm">
-                                            <i class="bi bi-pencil"></i> Modifica
-                                        </a>
-                                        <button class="btn btn-danger btn-sm"
-                                                onclick="apriModalElimina(<?php echo $id; ?>, '<?php echo $nomeJs; ?>')">
-                                            <i class="bi bi-trash"></i> Elimina
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+        <div class="content-grid">
+            <div class="grid-full">
+                <div class="card-panel">
+                    <p class="section-title">
+                        <i class="bi bi-geo-fill me-1"></i> Lista Zone
+                        <span class="float-end fw-normal" style="text-transform:none;letter-spacing:0;">
+                            <button class="btn btn-primary btn-sm"
+                                    data-bs-toggle="modal" data-bs-target="#modalAggiungiZona">
+                                <i class="bi bi-plus-lg me-1"></i> Aggiungi zona
+                            </button>
+                        </span>
+                    </p>
+
+                    <?php if (empty($zone)): ?>
+                        <div class="text-center text-secondary py-4">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i> Nessuna zona trovata.
+                        </div>
                     <?php else: ?>
-                        <tr><td colspan="3" class="text-center text-secondary py-3">Nessuna zona trovata</td></tr>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-zone mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:70px;">ID</th>
+                                    <th>Nome</th>
+                                    <th class="text-center" style="width:130px;">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($zone as $row): ?>
+                                <?php
+                                    $id     = (int)$row['ID_zona'];
+                                    $nome   = htmlspecialchars($row['nome']);
+                                    $nomeJs = addslashes($row['nome']);
+                                ?>
+                                <?php if (isset($_GET['modifica']) && (int)$_GET['modifica'] === $id): ?>
+                                    <form id="form-mod-<?php echo $id; ?>" method="POST" style="display:none">
+                                        <input type="hidden" name="id" value="<?php echo $id; ?>">
+                                        <input type="hidden" name="modifica" value="1">
+                                    </form>
+                                    <tr>
+                                        <td><?php echo $id; ?></td>
+                                        <td>
+                                            <input type="text" name="nome" value="<?php echo $nome; ?>"
+                                                   class="form-control form-control-sm"
+                                                   form="form-mod-<?php echo $id; ?>" required>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="submit" form="form-mod-<?php echo $id; ?>"
+                                                    class="btn btn-outline-success btn-sm py-0 px-2 me-1" title="Salva">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                            <a href="zona.php" class="btn btn-outline-secondary btn-sm py-0 px-2" title="Annulla">
+                                                <i class="bi bi-x-lg"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <tr>
+                                        <td><?php echo $id; ?></td>
+                                        <td class="fw-semibold"><?php echo $nome; ?></td>
+                                        <td class="text-center">
+                                            <a href="?modifica=<?php echo $id; ?>"
+                                               class="btn btn-outline-primary btn-sm py-0 px-2 me-1" title="Modifica">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger btn-sm py-0 px-2"
+                                                    title="Elimina"
+                                                    onclick="apriModalElimina(<?php echo $id; ?>, '<?php echo $nomeJs; ?>')">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                     <?php endif; ?>
-                    </tbody>
-                </table>
+                </div>
             </div>
         </div>
 
@@ -219,44 +272,26 @@ $conn->close();
 <!-- Modal Aggiungi Zona -->
 <div class="modal fade" id="modalAggiungiZona" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold">Nuova zona</h5>
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title" style="color:#2c3e50;font-weight:600;">
+                    <i class="bi bi-plus-circle-fill me-2"></i>Nuova Zona
+                </h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="zona.php">
-                <div class="modal-body">
-                    <label class="form-label fw-semibold">Nome zona</label>
-                    <input type="text" name="zona" class="form-control" required
+                <div class="modal-body pt-2">
+                    <label class="form-label" style="font-size:.82rem;font-weight:500;">Nome zona <span class="text-danger">*</span></label>
+                    <input type="text" name="zona" class="form-control form-control-sm" required
                            placeholder="Es: Nord, Sud, Centro...">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="submit" name="inserisci" class="btn btn-primary px-4">Salva</button>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" name="inserisci" class="btn btn-success btn-sm px-4">
+                        <i class="bi bi-floppy-fill me-1"></i> Salva
+                    </button>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Conferma Eliminazione -->
-<div class="modal fade" id="modalElimina" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Conferma eliminazione</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p id="modal-elimina-msg" class="mb-0"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
-                <form id="form-elimina" method="POST" action="zona.php" style="display:inline">
-                    <input type="hidden" name="id_zona" id="modal-id-zona" value="">
-                    <button type="submit" class="btn btn-danger px-4">Elimina</button>
-                </form>
-            </div>
         </div>
     </div>
 </div>
