@@ -1,0 +1,283 @@
+/* ===========================
+   3ELLEORIE — style.css (no JS)
+   =========================== */
+
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed: 70px;
+    --sidebar-bg: #2c3e50;
+    --sidebar-text: #bdc3c7;
+    --sidebar-hover: #1a252f;
+    --topbar-height: 60px;
+}
+
+body {
+    background-color: #f4f7f6;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+/* ===== CHECKBOX NASCOSTO ===== */
+#sidebar-toggle { display: none; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    min-height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 1040;
+    transition: width 0.3s ease, transform 0.3s ease;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .logo {
+    padding: 0 20px;
+    font-size: 1.4rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    height: var(--topbar-height);
+    flex-shrink: 0;
+}
+
+.sidebar .logo .logo-text {
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s, width 0.3s;
+}
+
+.menu-toggle-label {
+    cursor: pointer;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    user-select: none;
+    color: white;
+    line-height: 1;
+}
+
+.nav-group .nav-label {
+    font-size: 0.65rem;
+    padding: 16px 20px 6px;
+    color: #7f8c8d;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar a.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 11px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.sidebar a.nav-link i {
+    width: 28px;
+    text-align: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.sidebar a.nav-link .link-text {
+    margin-left: 10px;
+    overflow: hidden;
+    transition: opacity 0.2s;
+}
+
+.sidebar a.nav-link:hover,
+.sidebar a.nav-link.active {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+/* ===== MAIN WRAPPER ===== */
+.main-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+/* ===== TOP BAR ===== */
+.top-bar {
+    height: var(--topbar-height);
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Label hamburger nella top-bar (solo mobile) */
+.hamburger-label {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: #555;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    user-select: none;
+    line-height: 1;
+}
+
+.hamburger-label:hover { background: #f0f0f0; }
+
+.breadcrumb { margin: 0; font-size: 0.82rem; }
+.breadcrumb-item.active { color: #2c3e50; font-weight: 600; }
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1039;
+}
+
+/* ===== PAGE CONTENT ===== */
+.page-content { flex: 1; padding: 28px 24px; }
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+}
+
+.grid-full  { grid-column: span 12; }
+.grid-8     { grid-column: span 8; }
+.grid-4     { grid-column: span 4; }
+.grid-third { grid-column: span 4; }
+
+/* ===== CARD PANEL ===== */
+.card-panel {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    padding: 24px;
+    min-height: 120px;
+}
+
+.card-panel.placeholder-block {
+    border: 2px dashed #d5dde5;
+    background: #f9fbfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9baab8;
+    font-size: 0.85rem;
+}
+
+/* ===== FORM ===== */
+.form-section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #7f8c8d;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.upload-box {
+    border: 2px dashed #cdd5dc;
+    padding: 30px;
+    text-align: center;
+    background: #fafbfc;
+    color: #9baab8;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+}
+
+.upload-box:hover { border-color: #3498db; color: #3498db; }
+.upload-box i { font-size: 2rem; margin-bottom: 8px; display: block; }
+
+#sidebar-toggle:checked ~ .sidebar {
+    width: var(--sidebar-collapsed);
+}
+
+#sidebar-toggle:checked ~ .sidebar .logo-text,
+#sidebar-toggle:checked ~ .sidebar .link-text,
+#sidebar-toggle:checked ~ .sidebar .nav-label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    display: none;
+}
+
+#sidebar-toggle:checked ~ .main-wrapper {
+    margin-left: var(--sidebar-collapsed);
+}
+
+@media (max-width: 991.98px) {
+
+    .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width) !important;
+    }
+
+    .hamburger-label {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Nasconde il toggle dentro la sidebar su mobile */
+    .sidebar .menu-toggle-label { display: none; }
+
+    .main-wrapper,
+    #sidebar-toggle:checked ~ .main-wrapper {
+        margin-left: 0 !important;
+    }
+
+    /* Sidebar aperta su mobile */
+    #sidebar-toggle:checked ~ .sidebar {
+        transform: translateX(0);
+        width: var(--sidebar-width) !important;
+    }
+
+    #sidebar-toggle:checked ~ .sidebar .logo-text,
+    #sidebar-toggle:checked ~ .sidebar .link-text,
+    #sidebar-toggle:checked ~ .sidebar .nav-label {
+        opacity: 1;
+        width: auto;
+        display: inline;
+    }
+
+    /* Overlay visibile quando sidebar aperta */
+    #sidebar-toggle:checked ~ .sidebar-overlay {
+        display: block;
+    }
+
+    /* Griglia responsive */
+    .grid-8,
+    .grid-4,
+    .grid-third {
+        grid-column: span 12;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .grid-third { grid-column: span 6; }
+}
