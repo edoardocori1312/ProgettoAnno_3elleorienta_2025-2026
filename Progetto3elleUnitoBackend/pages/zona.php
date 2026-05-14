@@ -189,7 +189,7 @@ $conn->close();
                 <div class="card-panel">
                     <p class="section-title">
                         <i class="bi bi-geo-fill me-1"></i> Lista Zone
-                        <span class="float-end fw-normal" style="text-transform:none;letter-spacing:0;">
+                        <span class="float-end fw-normal" style="text-transform:none;letter-spacing:0;"><td class="text-center">
                             <button class="btn btn-primary btn-sm"
                                     data-bs-toggle="modal" data-bs-target="#modalAggiungiZona">
                                 <i class="bi bi-plus-lg me-1"></i> Aggiungi zona
@@ -241,19 +241,20 @@ $conn->close();
                                         </td>
                                     </tr>
                                 <?php else: ?>
-                                    <tr>
+                                     <tr>
                                         <td><?php echo $id; ?></td>
                                         <td class="fw-semibold"><?php echo $nome; ?></td>
-                                        <td class="text-center">
-                                            <a href="?modifica=<?php echo $id; ?>"
-                                               class="btn btn-outline-primary btn-sm py-0 px-2 me-1" title="Modifica">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </a>
-                                            <button class="btn btn-outline-danger btn-sm py-0 px-2"
-                                                    title="Elimina"
-                                                    onclick="apriModalElimina(<?php echo $id; ?>, '<?php echo $nomeJs; ?>')">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
+                                         <td class="text-center">
+                                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                                <a href="?modifica=<?php echo $id; ?>"
+                                                   class="btn btn-outline-primary btn-sm py-0 px-2" title="Modifica">
+                                                    <i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Modifica
+                                                </a>
+                                                <button class="btn btn-outline-danger btn-sm py-0 px-2" title="Elimina"
+                                                        onclick="apriModalElimina(<?php echo $id; ?>, '<?php echo $nomeJs; ?>')">
+                                                    <i class="bi bi-trash-fill me-1" aria-hidden="true"></i>Elimina
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endif; ?>
