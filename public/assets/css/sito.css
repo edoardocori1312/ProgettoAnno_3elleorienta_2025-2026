@@ -1,0 +1,98 @@
+/* Svelati — Stile sito pubblico */
+:root {
+  --brand:   #2c3e50;
+  --accent:  #e74c3c;
+  --text:    #333;
+  --muted:   #6c757d;
+  --bg-soft: #f8f9fa;
+  --border:  #dee2e6;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+  background: #fff;
+}
+
+/* Navbar */
+.site-header { background: var(--brand); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.site-header .navbar-brand,
+.site-header .nav-link { color: rgba(255,255,255,.88); }
+.site-header .nav-link:hover,
+.site-header .nav-link.active {
+  color: #fff;
+  background: rgba(255,255,255,.12);
+  border-radius: 4px;
+}
+.site-header .navbar-toggler { border: none; color: #fff; }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, var(--brand) 0%, #3d566e 100%);
+  color: #fff;
+  padding: 72px 0 52px;
+  text-align: center;
+}
+.hero h1 { font-size: 2.4rem; font-weight: 700; }
+.hero p  { font-size: 1.1rem; opacity: .85; max-width: 560px; margin: 0 auto; }
+
+/* Section title */
+.sez-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--brand);
+  margin-bottom: 1.5rem;
+  padding-bottom: .4rem;
+  border-bottom: 3px solid var(--accent);
+  display: inline-block;
+}
+
+/* School / event cards */
+.scheda {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100%;
+  transition: box-shadow .18s;
+}
+.scheda:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); }
+.scheda-foto {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+.scheda-placeholder {
+  width: 100%;
+  height: 160px;
+  background: var(--bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 2.4rem;
+}
+
+/* Filtri */
+.filtri-barra {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 2rem;
+}
+
+/* Mappa Leaflet */
+#mappa-eventi {
+  height: 420px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  z-index: 0;
+}
+
+/* Badge target evento */
+.badge-terr  { background: #f0ad4e; color: #333; }
+.badge-scol  { background: #5bc0de; color: #333; }
+
+/* Footer */
+.footer a       { color: rgba(255,255,255,.72); }
+.footer a:hover { color: #fff; }

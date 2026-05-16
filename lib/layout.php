@@ -8,7 +8,7 @@ const BS_JS   = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.
 // SITO PUBBLICO
 // ────────────────────────────────────────────────────────────────────────────
 
-function render_head_pubblica(string $titolo): void { ?>
+function render_head_pubblica(string $titolo, string $headExtra = ''): void { ?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -18,8 +18,15 @@ function render_head_pubblica(string $titolo): void { ?>
     <link rel="stylesheet" href="<?= BS_CSS ?>">
     <link rel="stylesheet" href="<?= BS_ICON ?>">
     <link rel="stylesheet" href="assets/css/sito.css">
+    <?= $headExtra ?>
 </head>
 <body>
+<?php }
+
+function chiudi_pagina_pubblica(): void { ?>
+<script src="<?= BS_JS ?>"></script>
+</body>
+</html>
 <?php }
 
 function render_navbar_pubblica(string $attiva = ''): void {
