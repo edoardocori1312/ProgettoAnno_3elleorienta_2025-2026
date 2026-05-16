@@ -9,9 +9,9 @@ USE treelleorienta;
 
 -- Foto placeholder (used by seed schools/events)
 INSERT INTO Foto (ID_foto, path_foto) VALUES
-    (1, 'assets/uploads/placeholder.jpg'),
-    (2, 'assets/uploads/placeholder.jpg'),
-    (3, 'assets/uploads/placeholder.jpg');
+    (1, 'uploads/placeholder.jpg'),
+    (2, 'uploads/placeholder.jpg'),
+    (3, 'uploads/placeholder.jpg');
 
 -- Province
 INSERT INTO Province (sigla, nome) VALUES
