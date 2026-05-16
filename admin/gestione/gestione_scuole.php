@@ -154,7 +154,7 @@ function creaScuola(mysqli $conn, array $dati, array $file): array {
         'INSERT INTO Scuole (COD_meccanografico, nome, descrizione, sito, via, n_civico, id_citta, latitudine, longitudine, id_foto)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
-    $stmt->bind_param('sssssiidd' . ($idFoto !== null ? 'i' : 'i'), $cod, $nome, $desc, $sito, $via, $civ, $citta, $lat, $lng, $idFoto);
+    $stmt->bind_param('sssssiiddi', $cod, $nome, $desc, $sito, $via, $civ, $citta, $lat, $lng, $idFoto);
     if (!$stmt->execute()) {
         $stmt->close();
         return ['tipo' => 'errore', 'msg' => 'Errore nel salvataggio della scuola (il codice esiste già?).'];
