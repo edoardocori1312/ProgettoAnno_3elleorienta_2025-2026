@@ -1,14 +1,112 @@
 <?php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// controlloSessione: se la sessione non è valida reindirizza al login
-if (!isset($_SESSION["emailUtente"])) {
-    header("Location: ../../PROGETTOV13/login.php");
-    exit;
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header("Location: zona.php");
+    exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
+    $em = trim($_POST['email']   ?? '');
+    $pw = trim($_POST['password'] ?? '');
+
+    if ($em === '' || $pw === '') {
+        $_SESSION['errore'] = "Compila tutti i campi.";
+    } else {
+        require '../config/db.php';
+        $conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
+        if ($conn->connect_error) {
+            $_SESSION['errore'] = "Errore di connessione al database.";
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM utenti WHERE email = ?");
+            if ($stmt === false) {
+                $_SESSION['errore'] = "Errore nella preparazione della query.";
+            } else {
+                $stmt->bind_param("s", $em);
+                $stmt->execute();
+                $riga = $stmt->get_result()->fetch_object();
+                if ($riga && password_verify($pw, $riga->hash_password)) {
+                    $_SESSION['emailUtente']    = $em;
+                    $_SESSION['usernameUtente'] = $riga->username;
+                    $_SESSION['idUtente']       = $riga->ID_utente;
+                    $_SESSION['ruoloUtente']    = $riga->tipo;
+                    $_SESSION['cod_scuola']     = $riga->cod_scuola;
+                    $stmt->close();
+                    $conn->close();
+                    header("Location: zona.php");
+                    exit();
+                } else {
+                    $_SESSION['errore'] = "Credenziali non valide.";
+                }
+                $stmt->close();
+            }
+            $conn->close();
+        }
+    }
+    header("Location: zona.php");
+    exit();
+}
+
+// ── CONTROLLO SESSIONE: mostra login se non autenticato ───────────────────────
+if (!isset($_SESSION['emailUtente'])) {
+    $errore = $_SESSION['errore'] ?? null;
+    unset($_SESSION['errore']);
+    ?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>3elleorienta — Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../style/style.css">
+    <link rel="stylesheet" href="../style/Progettistyle.css">
+</head>
+<body class="bg-light">
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow rounded" style="max-width:450px;width:100%;">
+        <div class="bg-white p-4 d-flex flex-column">
+            <div class="text-center mb-4">
+                <img src="../img/logo.png" width="60" height="60" alt="logo" style="object-fit:contain;">
+            </div>
+
+            <?php if ($errore): ?>
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                <strong class="me-2">Errore:</strong><?php echo htmlspecialchars($errore, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php endif; ?>
+
+            <form action="zona.php" method="POST">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Accedi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+    <?php
+    exit();
+}
+
+// ── UTENTE AUTENTICATO ────────────────────────────────────────────────────────
 $emailUtente = $_SESSION["emailUtente"];
 $username    = $_SESSION["usernameUtente"];
 $idUtente    = $_SESSION["idUtente"];
@@ -77,7 +175,7 @@ $conn->close();
 <aside class="sidebar">
     <div class="logo">
         <span class="logo-text">
-            <img src="img/logo.png" alt="logo" width="40" height="40" style="object-fit:contain;vertical-align:middle;">
+            <img src="../img/logo.png" alt="logo" width="40" height="40" style="object-fit:contain;vertical-align:middle;">
             3elleorienta
         </span>
         <label class="menu-toggle-label" for="sidebar-toggle" title="Apri/Chiudi menu">☰</label>
@@ -141,7 +239,7 @@ $conn->close();
             <i class="bi bi-person-circle"></i>
             <span class="fw-semibold" style="font-size:0.88rem;"><?php echo htmlspecialchars($username); ?></span>
             <span class="text-secondary">|</span>
-            <a href="logout.php" class="text-danger text-decoration-none" style="font-size:0.88rem;">Logout</a>
+            <a href="?logout" class="text-danger text-decoration-none" style="font-size:0.88rem;">Logout</a>
         </div>
     </header>
 
