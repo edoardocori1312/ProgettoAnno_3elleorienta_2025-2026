@@ -124,7 +124,7 @@ render_topbar_admin('Progetti');
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
                             <button class="btn btn-outline-danger btn-sm"
-                                    onclick="apriElimina(<?= $id ?>, '<?= addslashes($p['titolo']) ?>')">
+                                    onclick="apriElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($p['titolo']), ENT_QUOTES, 'UTF-8') ?>)">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                             <?php else: ?>

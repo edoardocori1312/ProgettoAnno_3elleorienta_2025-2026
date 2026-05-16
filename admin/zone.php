@@ -39,11 +39,6 @@ render_sidebar_admin('zone.php');
 render_topbar_admin('Zone');
 ?>
 
-<style>
-.table-zone th { font-size:.78rem; text-transform:uppercase; letter-spacing:.8px; color:#7f8c8d; }
-.table-zone td { font-size:.88rem; vertical-align:middle; }
-</style>
-
 <?php render_flash($flash); ?>
 
 <!-- Modale conferma eliminazione -->
@@ -131,8 +126,7 @@ render_topbar_admin('Zone');
                     <?php foreach ($zone as $row):
                         $id     = (int)$row['ID_zona'];
                         $nome   = htmlspecialchars($row['nome']);
-                        $nomeJs = addslashes($row['nome']);
-                        $mostraModifica = isset($_GET['modifica']) && (int)$_GET['modifica'] === $id;
+                                        $mostraModifica = isset($_GET['modifica']) && (int)$_GET['modifica'] === $id;
                     ?>
                     <?php if ($mostraModifica): ?>
                         <tr class="table-warning">
@@ -161,7 +155,7 @@ render_topbar_admin('Zone');
                                     <i class="bi bi-pencil-fill"></i>
                                 </a>
                                 <button class="btn btn-outline-danger btn-sm"
-                                        onclick="apriModaleElimina(<?= $id ?>, '<?= $nomeJs ?>')">
+                                        onclick="apriModaleElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($row['nome']), ENT_QUOTES, 'UTF-8') ?>)">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
                             </td>

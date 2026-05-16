@@ -138,7 +138,7 @@ render_topbar_admin('Scuole');
                             <?php endif; ?>
                             <?php if ($isAdmin): ?>
                             <button class="btn btn-outline-danger btn-sm"
-                                    onclick="apriElimina('<?= addslashes($s['COD_meccanografico']) ?>', '<?= addslashes($s['nome']) ?>')">
+                                    onclick="apriElimina(<?= htmlspecialchars(json_encode($s['COD_meccanografico']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($s['nome']), ENT_QUOTES, 'UTF-8') ?>)">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                             <?php endif; ?>

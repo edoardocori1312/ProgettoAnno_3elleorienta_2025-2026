@@ -156,7 +156,7 @@ render_topbar_admin('Eventi');
                                 <?php endif; ?>
                                 <?php if ($puoEliminare): ?>
                                 <button class="btn btn-outline-danger btn-sm"
-                                        onclick="apriElimina(<?= $id ?>, '<?= addslashes($ev['titolo']) ?>')">
+                                        onclick="apriElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($ev['titolo']), ENT_QUOTES, 'UTF-8') ?>)">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
                                 <?php endif; ?>
