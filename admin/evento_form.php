@@ -46,7 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     imposta_flash($esito['tipo'], $esito['msg']);
     $conn->close();
-    header('Location: eventi.php');
+    if ($esito['tipo'] === 'errore') {
+        $redirId = (int)($_POST['id_evento'] ?? 0);
+        header('Location: evento_form.php' . ($redirId > 0 ? '?id=' . $redirId : ''));
+    } else {
+        header('Location: eventi.php');
+    }
     exit;
 }
 

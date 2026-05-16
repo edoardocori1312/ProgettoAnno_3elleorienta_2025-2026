@@ -50,7 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     imposta_flash($esito['tipo'], $esito['msg']);
     $conn->close();
-    header('Location: scuole.php');
+    if ($esito['tipo'] === 'errore') {
+        $redirCod = $_POST['cod_meccanografico'] ?? '';
+        header('Location: scuola_form.php' . ($redirCod !== '' ? '?cod=' . urlencode($redirCod) : ''));
+    } else {
+        header('Location: scuole.php');
+    }
     exit;
 }
 
