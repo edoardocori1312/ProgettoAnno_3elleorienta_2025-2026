@@ -40,7 +40,7 @@ function render_navbar_pubblica(string $attiva = ''): void {
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid px-4">
       <a class="navbar-brand" href="index.php">
-        <img src="assets/img/logo.png" alt="Logo Svelati" class="navbar-logo" style="height:40px;">
+        <img src="assets/img/logo.png" alt="Logo 3elleorienta" class="navbar-logo">
       </a>
       <button class="navbar-toggler border-0" type="button"
               data-bs-toggle="collapse" data-bs-target="#navPubblica">
