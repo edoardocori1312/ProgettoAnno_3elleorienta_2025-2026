@@ -55,8 +55,7 @@ function creaUtente(mysqli $conn, array $dati): array {
     $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Utenti WHERE username = ? OR email = ?');
     $stmtChk->bind_param('ss', $username, $email);
     $stmtChk->execute();
-    $stmtChk->bind_result($dup);
-    $stmtChk->fetch();
+    [$dup] = $stmtChk->get_result()->fetch_row();
     $stmtChk->close();
     if ($dup > 0) {
         return ['tipo' => 'errore', 'msg' => 'Username o email già in uso.'];
@@ -96,8 +95,7 @@ function aggiornaUtente(mysqli $conn, int $id, array $dati): array {
     $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Utenti WHERE (username = ? OR email = ?) AND ID_utente != ?');
     $stmtChk->bind_param('ssi', $username, $email, $id);
     $stmtChk->execute();
-    $stmtChk->bind_result($dup);
-    $stmtChk->fetch();
+    [$dup] = $stmtChk->get_result()->fetch_row();
     $stmtChk->close();
     if ($dup > 0) {
         return ['tipo' => 'errore', 'msg' => 'Username o email già in uso.'];

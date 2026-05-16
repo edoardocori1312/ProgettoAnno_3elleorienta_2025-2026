@@ -49,8 +49,7 @@ function creaLink(mysqli $conn, array $dati, array $file): array {
     $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Links WHERE n_ordine = ?');
     $stmtChk->bind_param('i', $ordine);
     $stmtChk->execute();
-    $stmtChk->bind_result($dup);
-    $stmtChk->fetch();
+    [$dup] = $stmtChk->get_result()->fetch_row();
     $stmtChk->close();
     if ($dup > 0) {
         return ['tipo' => 'errore', 'msg' => "Il numero d'ordine $ordine è già in uso."];
@@ -89,8 +88,7 @@ function aggiornaLink(mysqli $conn, int $id, array $dati, array $file): array {
     $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Links WHERE n_ordine = ? AND ID_link != ?');
     $stmtChk->bind_param('ii', $ordine, $id);
     $stmtChk->execute();
-    $stmtChk->bind_result($dup);
-    $stmtChk->fetch();
+    [$dup] = $stmtChk->get_result()->fetch_row();
     $stmtChk->close();
     if ($dup > 0) {
         return ['tipo' => 'errore', 'msg' => "Il numero d'ordine $ordine è già in uso."];

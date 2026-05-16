@@ -48,8 +48,7 @@ function creaProgetto(mysqli $conn, array $dati, array $file): array {
     $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Progetti WHERE n_ordine = ?');
     $stmtChk->bind_param('i', $ordine);
     $stmtChk->execute();
-    $stmtChk->bind_result($dup);
-    $stmtChk->fetch();
+    [$dup] = $stmtChk->get_result()->fetch_row();
     $stmtChk->close();
     if ($dup > 0) {
         return ['tipo' => 'errore', 'msg' => "Il numero d'ordine $ordine è già in uso."];
@@ -87,8 +86,7 @@ function aggiornaProgetto(mysqli $conn, int $id, array $dati, array $file): arra
     $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Progetti WHERE n_ordine = ? AND ID_progetto != ?');
     $stmtChk->bind_param('ii', $ordine, $id);
     $stmtChk->execute();
-    $stmtChk->bind_result($dup);
-    $stmtChk->fetch();
+    [$dup] = $stmtChk->get_result()->fetch_row();
     $stmtChk->close();
     if ($dup > 0) {
         return ['tipo' => 'errore', 'msg' => "Il numero d'ordine $ordine è già in uso."];

@@ -10,8 +10,7 @@ function creaZona(mysqli $conn, string $nome): array {
     $stmtCheck = $conn->prepare('SELECT COUNT(*) FROM Zone WHERE LOWER(nome) = LOWER(?)');
     $stmtCheck->bind_param('s', $nome);
     $stmtCheck->execute();
-    $stmtCheck->bind_result($count);
-    $stmtCheck->fetch();
+    [$count] = $stmtCheck->get_result()->fetch_row();
     $stmtCheck->close();
     if ($count > 0) {
         return ['tipo' => 'errore', 'msg' => 'La zona "' . htmlspecialchars($nome) . '" esiste già'];
@@ -46,8 +45,7 @@ function aggiornaZona(mysqli $conn, int $id, string $nome): array {
     $stmtCheck = $conn->prepare('SELECT COUNT(*) FROM Zone WHERE LOWER(nome) = LOWER(?) AND ID_zona != ?');
     $stmtCheck->bind_param('si', $nome, $id);
     $stmtCheck->execute();
-    $stmtCheck->bind_result($count);
-    $stmtCheck->fetch();
+    [$count] = $stmtCheck->get_result()->fetch_row();
     $stmtCheck->close();
     if ($count > 0) {
         return ['tipo' => 'errore', 'msg' => 'La zona "' . htmlspecialchars($nome) . '" esiste già'];
@@ -65,8 +63,7 @@ function rimuoviZona(mysqli $conn, int $idZona): array {
     $chk = $conn->prepare('SELECT COUNT(*) FROM Citta WHERE id_zona = ?');
     $chk->bind_param('i', $idZona);
     $chk->execute();
-    $chk->bind_result($count);
-    $chk->fetch();
+    [$count] = $chk->get_result()->fetch_row();
     $chk->close();
     if ($count > 0) {
         return ['tipo' => 'errore', 'msg' => 'Impossibile eliminare: la zona è associata a una o più città'];
