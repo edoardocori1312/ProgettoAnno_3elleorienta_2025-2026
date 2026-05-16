@@ -13,7 +13,7 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
     && sed -i 's/\r//' /usr/local/bin/docker-entrypoint.sh
 
-RUN echo 'RedirectMatch ^/$ /public/' > /etc/apache2/conf-enabled/redirect-root.conf
+RUN printf 'RedirectMatch ^/$ /public/\n<DirectoryMatch "^/var/www/html/(config|db|lib|docker)">\n    Require all denied\n</DirectoryMatch>\n' > /etc/apache2/conf-enabled/redirect-root.conf
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
