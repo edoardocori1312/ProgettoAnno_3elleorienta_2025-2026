@@ -68,46 +68,7 @@ render_navbar_pubblica('eventi.php');
     <div class="row row-cols-1 row-cols-md-2 g-4">
         <?php foreach ($eventi as $ev): ?>
         <div class="col">
-            <div class="scheda h-100">
-                <?php if ($ev['path_foto']): ?>
-                <img src="../<?= htmlspecialchars($ev['path_foto']) ?>" class="scheda-foto"
-                     alt="<?= htmlspecialchars($ev['titolo']) ?>">
-                <?php else: ?>
-                <div class="scheda-placeholder"><i class="bi bi-calendar-event"></i></div>
-                <?php endif; ?>
-                <div class="p-3">
-                    <div class="d-flex gap-2 mb-2">
-                        <?php if ($ev['target'] === 'TERRITORIALE'): ?>
-                        <span class="badge badge-terr">Territoriale</span>
-                        <?php else: ?>
-                        <span class="badge badge-scol">Scolastico</span>
-                        <?php endif; ?>
-                        <?php if ($ev['prenotabile']): ?>
-                        <span class="badge bg-success">Prenotabile</span>
-                        <?php endif; ?>
-                    </div>
-                    <h6 class="fw-semibold"><?= htmlspecialchars($ev['titolo']) ?></h6>
-                    <p class="text-muted mb-2" style="font-size:.85rem;">
-                        <?= htmlspecialchars($ev['descrizione_breve']) ?>
-                    </p>
-                    <div class="d-flex flex-wrap gap-3" style="font-size:.82rem;color:var(--muted);">
-                        <span>
-                            <i class="bi bi-calendar3 me-1"></i>
-                            <?= date('d/m/Y H:i', strtotime($ev['ora_inizio'])) ?>
-                            → <?= date('d/m/Y H:i', strtotime($ev['ora_fine'])) ?>
-                        </span>
-                        <?php if ($ev['target'] === 'SCOLASTICO' && $ev['nome_scuola']): ?>
-                        <span><i class="bi bi-building me-1"></i><?= htmlspecialchars($ev['nome_scuola']) ?></span>
-                        <?php elseif ($ev['via_P'] && $ev['nome_citta']): ?>
-                        <span>
-                            <i class="bi bi-geo-alt me-1"></i>
-                            <?= htmlspecialchars($ev['via_P']) ?> <?= htmlspecialchars($ev['n_civico_P']) ?>,
-                            <?= htmlspecialchars($ev['nome_citta']) ?>
-                        </span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
+            <?php render_scheda_evento($ev); ?>
         </div>
         <?php endforeach; ?>
     </div>
@@ -117,7 +78,7 @@ render_navbar_pubblica('eventi.php');
     <?php if (!empty($eventiPerScuola)): ?>
     <h2 class="sez-title mt-5">Eventi per scuola</h2>
     <div class="accordion" id="accordionEventiScuole">
-        <?php $i = 0; foreach ($eventiPerScuola as $cod => $gruppo): ?>
+        <?php foreach (array_values($eventiPerScuola) as $i => $gruppo): ?>
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button <?= $i > 0 ? 'collapsed' : '' ?>"
@@ -132,40 +93,14 @@ render_navbar_pubblica('eventi.php');
                     <div class="row row-cols-1 row-cols-md-2 g-4">
                         <?php foreach ($gruppo['eventi'] as $ev): ?>
                         <div class="col">
-                            <div class="scheda h-100">
-                                <?php if ($ev['path_foto']): ?>
-                                <img src="../<?= htmlspecialchars($ev['path_foto']) ?>" class="scheda-foto"
-                                     alt="<?= htmlspecialchars($ev['titolo']) ?>">
-                                <?php else: ?>
-                                <div class="scheda-placeholder"><i class="bi bi-calendar-event"></i></div>
-                                <?php endif; ?>
-                                <div class="p-3">
-                                    <div class="d-flex gap-2 mb-2">
-                                        <span class="badge badge-scol">Scolastico</span>
-                                        <?php if ($ev['prenotabile']): ?>
-                                        <span class="badge bg-success">Prenotabile</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <h6 class="fw-semibold"><?= htmlspecialchars($ev['titolo']) ?></h6>
-                                    <p class="text-muted mb-2" style="font-size:.85rem;">
-                                        <?= htmlspecialchars($ev['descrizione_breve']) ?>
-                                    </p>
-                                    <div class="d-flex flex-wrap gap-3" style="font-size:.82rem;color:var(--muted);">
-                                        <span>
-                                            <i class="bi bi-calendar3 me-1"></i>
-                                            <?= date('d/m/Y H:i', strtotime($ev['ora_inizio'])) ?>
-                                            → <?= date('d/m/Y H:i', strtotime($ev['ora_fine'])) ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php render_scheda_evento($ev, false); ?>
                         </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
             </div>
         </div>
-        <?php $i++; endforeach; ?>
+        <?php endforeach; ?>
     </div>
     <?php endif; ?>
 
