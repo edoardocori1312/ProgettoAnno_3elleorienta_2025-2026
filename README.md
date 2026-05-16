@@ -72,6 +72,41 @@ Aggiungi il logo del progetto in:
 - `admin/assets/img/logo.png`
 - `public/assets/img/logo.png`
 
+## Avvio con Docker
+
+Ambiente completo (MariaDB + phpMyAdmin + app) con un solo comando. Il codice è bind-mountato: le modifiche su host sono subito visibili nel container.
+
+### Requisiti
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+### Primo avvio
+
+```bash
+docker compose up -d --build
+```
+
+Attendi ~20 s che il DB diventi healthy, poi apri:
+
+| Servizio       | URL                              |
+|----------------|----------------------------------|
+| Sito pubblico  | http://localhost:8080/public/    |
+| Pannello admin | http://localhost:8080/admin/     |
+| phpMyAdmin     | http://localhost:8081            |
+
+Credenziali phpMyAdmin: `root` / `root`
+
+Le immagini demo vengono generate automaticamente in `uploads/` al primo avvio.
+
+### Ri-seedare il database
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+> **Nota:** il volume `dbdata` viene ricreato da zero — tutti i dati inseriti vengono persi.
+
 ## Credenziali di test
 
 | Ruolo      | Email              | Password    |

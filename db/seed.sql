@@ -1,52 +1,64 @@
 -- ============================================================
 -- Seed data for treelleorienta
 -- Test credentials:
---   ADMIN    -> admin@svelati.it  / password123
+--   ADMIN      -> admin@svelati.it  / password123
 --   SCOLASTICO -> scuola@svelati.it / password123
 -- ============================================================
 
 USE treelleorienta;
 
--- Foto placeholder (used by seed schools/events)
+-- ---- Foto ----
 INSERT INTO Foto (ID_foto, path_foto) VALUES
-    (1, 'uploads/placeholder.jpg'),
-    (2, 'uploads/placeholder.jpg'),
-    (3, 'uploads/placeholder.jpg');
+    (1,  'uploads/seed_scuola1.jpg'),
+    (2,  'uploads/seed_scuola2.jpg'),
+    (3,  'uploads/seed_scuola3.jpg'),
+    (4,  'uploads/seed_scuola4.jpg'),
+    (5,  'uploads/seed_scuola5.jpg'),
+    (6,  'uploads/seed_evento1.jpg'),
+    (7,  'uploads/seed_evento2.jpg'),
+    (8,  'uploads/seed_evento3.jpg'),
+    (9,  'uploads/seed_evento4.jpg'),
+    (10, 'uploads/seed_evento5.jpg'),
+    (11, 'uploads/seed_progetto1.jpg'),
+    (12, 'uploads/seed_progetto2.jpg'),
+    (13, 'uploads/seed_progetto3.jpg'),
+    (14, 'uploads/seed_link1.jpg'),
+    (15, 'uploads/seed_link2.jpg');
 
--- Province
+-- ---- Province ----
 INSERT INTO Province (sigla, nome) VALUES
     ('AN', 'Ancona'),
     ('MC', 'Macerata'),
     ('PU', 'Pesaro e Urbino');
 
--- Zone
+-- ---- Zone ----
 INSERT INTO Zone (ID_zona, nome) VALUES
     (1, 'Jesi e Vallesina'),
     (2, 'Ancona'),
     (3, 'Macerata');
 
--- Citta
+-- ---- Citta ----
 INSERT INTO Citta (ID_citta, nome, sigla_provincia, id_zona) VALUES
     (1, 'Jesi',      'AN', 1),
     (2, 'Ancona',    'AN', 2),
     (3, 'Senigallia','AN', 2),
     (4, 'Macerata',  'MC', 3);
 
--- Ambiti
+-- ---- Ambiti ----
 INSERT INTO Ambiti (ID_ambito, nome, descrizione) VALUES
-    (1, 'Scuola e Formazione', 'Percorsi scolastici e formativi sul territorio.'),
+    (1, 'Scuola e Formazione',  'Percorsi scolastici e formativi sul territorio.'),
     (2, 'Lavoro e Professioni', 'Opportunita di lavoro e sbocchi professionali.'),
-    (3, 'Territorio e Reti',   'Associazioni e reti territoriali.'),
-    (4, 'Innovazione',         'Tecnologia, ricerca e innovazione.');
+    (3, 'Territorio e Reti',    'Associazioni e reti territoriali.'),
+    (4, 'Innovazione',          'Tecnologia, ricerca e innovazione.');
 
--- Indirizzi di studio
+-- ---- Indirizzi di studio ----
 INSERT INTO Indirizzi_studio (ID_indirizzo, nome, ordine) VALUES
-    (1, 'Liceo Scientifico',    1),
-    (2, 'Liceo Classico',       2),
-    (3, 'Istituto Tecnico',     3),
+    (1, 'Liceo Scientifico',      1),
+    (2, 'Liceo Classico',         2),
+    (3, 'Istituto Tecnico',       3),
     (4, 'Istituto Professionale', 4);
 
--- Scuole
+-- ---- Scuole (5: 3 originali + 2 nuove) ----
 INSERT INTO Scuole (COD_meccanografico, nome, descrizione, via, n_civico, id_citta, sito, latitudine, longitudine, id_foto) VALUES
     ('ANIS01100A', 'IIS Galilei',
      'Istituto di istruzione superiore con sede a Jesi, offre percorsi tecnici e scientifici.',
@@ -56,72 +68,90 @@ INSERT INTO Scuole (COD_meccanografico, nome, descrizione, via, n_civico, id_cit
      'Via Leonardo da Vinci', 20, 2, 'http://www.liceodavinci.gov.it', 43.613600, 13.518800, 2),
     ('ANIT03300C', 'ITT Marconi',
      'Istituto tecnico tecnologico a Senigallia, specializzato in informatica e elettronica.',
-     'Via Marconi', 5, 3, 'http://www.marconi-senigallia.gov.it', 43.715700, 13.217500, 3);
+     'Via Marconi', 5, 3, 'http://www.marconi-senigallia.gov.it', 43.715700, 13.217500, 3),
+    ('ANIS04400D', 'IIS Vanvitelli',
+     'Istituto superiore di Ancona con indirizzi classico e tecnico industriale.',
+     'Via Vanvitelli', 15, 2, 'http://www.vanvitelli-ancona.gov.it', 43.617000, 13.519000, 4),
+    ('ANSL05500E', 'Liceo E. Medi',
+     'Liceo scientifico e classico a Senigallia con forte tradizione umanistica.',
+     'Via Carducci', 8, 3, 'http://www.medioliceo.gov.it', 43.714500, 13.219000, 5);
 
--- Scuole_Ambiti
+-- ---- Scuole_Ambiti ----
 INSERT INTO Scuole_Ambiti (cod_scuola, id_ambito) VALUES
     ('ANIS01100A', 1), ('ANIS01100A', 2),
     ('ANPS02200B', 2), ('ANPS02200B', 3),
-    ('ANIT03300C', 3), ('ANIT03300C', 4);
+    ('ANIT03300C', 3), ('ANIT03300C', 4),
+    ('ANIS04400D', 2), ('ANIS04400D', 4),
+    ('ANSL05500E', 1), ('ANSL05500E', 3);
 
--- Scuole_Indirizzi
+-- ---- Scuole_Indirizzi ----
 INSERT INTO Scuole_Indirizzi (cod_scuola, id_indirizzo, n_ordine) VALUES
     ('ANIS01100A', 1, 1), ('ANIS01100A', 3, 2),
     ('ANPS02200B', 1, 1), ('ANPS02200B', 2, 2),
-    ('ANIT03300C', 3, 1), ('ANIT03300C', 4, 2);
+    ('ANIT03300C', 3, 1), ('ANIT03300C', 4, 2),
+    ('ANIS04400D', 2, 1), ('ANIS04400D', 3, 2),
+    ('ANSL05500E', 1, 1), ('ANSL05500E', 2, 2);
 
--- Eventi
--- target and nulled fields set explicitly (no trigger)
+-- ---- Eventi (6: 4 originali + 2 nuovi) ----
 INSERT INTO Eventi (titolo, descrizione, descrizione_breve, target, ora_inizio, ora_fine, visibile, prenotabile, via_P, n_civico_P, latitudine, longitudine, id_citta, cod_scuola, id_foto) VALUES
     ('Open Day IIS Galilei',
      'Giornata di orientamento per studenti delle medie. Visita ai laboratori e incontro con i docenti.',
      'Open day con laboratori aperti.',
      'SCOLASTICO',
-     '2026-01-17 09:00:00', '2026-01-17 13:00:00',
-     1, 1,
-     NULL, NULL, NULL, NULL, NULL, 'ANIS01100A', 1),
+     '2026-01-17 09:00:00', '2026-01-17 13:00:00', 1, 1,
+     NULL, NULL, NULL, NULL, NULL, 'ANIS01100A', 6),
     ('Orientamento ITT Marconi',
      'Presentazione dei corsi tecnici e incontro con studenti e famiglie.',
      'Presentazione corsi tecnici.',
      'SCOLASTICO',
-     '2026-02-14 10:00:00', '2026-02-14 12:00:00',
-     1, 0,
-     NULL, NULL, NULL, NULL, NULL, 'ANIT03300C', 2),
+     '2026-02-14 10:00:00', '2026-02-14 12:00:00', 1, 0,
+     NULL, NULL, NULL, NULL, NULL, 'ANIT03300C', 7),
     ('Fiera dell Orientamento Jesi',
      'Evento territoriale con stand di tutte le scuole della zona Jesi e Vallesina.',
      'Fiera con stand di tutte le scuole.',
      'TERRITORIALE',
-     '2026-03-07 09:00:00', '2026-03-07 17:00:00',
-     1, 0,
-     'Via della Repubblica', 1, 43.523100, 13.242500, 1, NULL, 3),
+     '2026-03-07 09:00:00', '2026-03-07 17:00:00', 1, 0,
+     'Via della Repubblica', 1, 43.523100, 13.242500, 1, NULL, 8),
     ('Evento Eliminato',
      'Questo evento e stato eliminato (soft delete demo).',
      'Demo soft delete.',
      'SCOLASTICO',
-     '2025-12-01 09:00:00', '2025-12-01 11:00:00',
-     0, 0,
-     NULL, NULL, NULL, NULL, NULL, 'ANPS02200B', 1);
+     '2025-12-01 09:00:00', '2025-12-01 11:00:00', 0, 0,
+     NULL, NULL, NULL, NULL, NULL, 'ANPS02200B', 6),
+    ('Workshop Coding Ancona',
+     'Workshop pratico di programmazione per studenti degli istituti tecnici di Ancona. Partecipazione gratuita con iscrizione online.',
+     'Workshop di programmazione per istituti tecnici.',
+     'SCOLASTICO',
+     '2026-04-20 14:00:00', '2026-04-20 17:00:00', 1, 1,
+     NULL, NULL, NULL, NULL, NULL, 'ANIS04400D', 9),
+    ('Giornata Orientamento Macerata',
+     'Grande evento territoriale con la partecipazione di tutte le scuole superiori della provincia di Macerata.',
+     'Orientamento territoriale Macerata.',
+     'TERRITORIALE',
+     '2026-05-10 09:00:00', '2026-05-10 16:00:00', 1, 0,
+     'Via Gramsci', 5, 43.300800, 13.453600, 4, NULL, 10);
 
--- soft-delete last event
 UPDATE Eventi SET data_eliminazione = NOW() WHERE titolo = 'Evento Eliminato';
 
--- Progetti
+-- ---- Progetti (4: 3 originali + 1 nuovo) ----
 INSERT INTO Progetti (titolo, descrizione, n_ordine, id_foto) VALUES
-    ('Svelati - Piattaforma Orientamento', 'Progetto principale di orientamento scolastico della Regione Marche.', 1, 1),
-    ('Laboratorio Coding',                 'Laboratorio di informatica per studenti delle medie.',                  2, 2),
-    ('Progetto Eliminato',                 'Questo progetto e stato eliminato (soft delete demo).',                 3, NULL);
+    ('Svelati - Piattaforma Orientamento', 'Progetto principale di orientamento scolastico della Regione Marche.', 1, 11),
+    ('Laboratorio Coding',                 'Laboratorio di informatica per studenti delle medie.',                  2, 12),
+    ('Progetto Eliminato',                 'Questo progetto e stato eliminato (soft delete demo).',                 3, NULL),
+    ('Percorso STEM Regionale',            'Percorso multidisciplinare di scienze, tecnologia, ingegneria e matematica per scuole delle Marche.', 4, 13);
 
 UPDATE Progetti SET data_eliminazione = CURDATE() WHERE titolo = 'Progetto Eliminato';
 
--- Links
+-- ---- Links (4: 3 originali + 1 nuovo) ----
 INSERT INTO Links (titolo, descrizione, indirizzo, n_ordine, id_foto) VALUES
-    ('Miur - Orientamento',     'Risorse ufficiali del Ministero per l orientamento scolastico.', 'https://www.miur.gov.it', 1, NULL),
-    ('Regione Marche Scuola',   'Portale scolastico della Regione Marche.',                        'https://www.regione.marche.it/Entra-in-Regione/Scuola', 2, NULL),
-    ('Link Eliminato',          'Questo link e stato eliminato (soft delete demo).',                'https://example.com', 3, NULL);
+    ('Miur - Orientamento',   'Risorse ufficiali del Ministero per l orientamento scolastico.',           'https://www.miur.gov.it',                               1, 14),
+    ('Regione Marche Scuola', 'Portale scolastico della Regione Marche.',                                 'https://www.regione.marche.it/Entra-in-Regione/Scuola', 2, 15),
+    ('Link Eliminato',        'Questo link e stato eliminato (soft delete demo).',                        'https://example.com',                                   3, NULL),
+    ('Orientamento.it',       'Portale nazionale per la scelta del percorso scolastico e universitario.', 'https://www.orientamento.it',                           4, NULL);
 
 UPDATE Links SET data_eliminazione = CURDATE() WHERE titolo = 'Link Eliminato';
 
--- Utenti (password: password123)
+-- ---- Utenti (password: password123) ----
 INSERT INTO Utenti (username, hash_password, email, tipo, stato, cod_scuola) VALUES
     ('admin',  '$2y$12$xMQsP2xSzbuKzv86jQJ2jOBNIPiWMrMB46WIDdc4BjQPiqOnxYQS6', 'admin@svelati.it',  'ADMIN',      'ATTIVO', NULL),
     ('scuola', '$2y$12$8XTODNeykKj2bhrFiDmjEunTM19plThLnd37Q7NKP.amBeGBVY3qW', 'scuola@svelati.it', 'SCOLASTICO', 'ATTIVO', 'ANIS01100A');

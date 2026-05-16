@@ -1,0 +1,6 @@
+uploads/*
+!uploads/.gitkeep
+!uploads/seed_*.jpg
+public/assets/img/logo.png
+admin/assets/img/logo.png
+.env
