@@ -26,6 +26,18 @@ $eventiMappa = array_filter($eventi, fn($e) =>
     $e['target'] === 'TERRITORIALE' && $e['latitudine'] && $e['longitudine']
 );
 
+// Raggruppa eventi SCOLASTICI per scuola (ordine: data asc già garantito dalla query)
+$eventiPerScuola = [];
+foreach ($eventi as $ev) {
+    if ($ev['target'] !== 'SCOLASTICO' || !$ev['cod_scuola'] || !$ev['nome_scuola']) continue;
+    $cod = $ev['cod_scuola'];
+    if (!array_key_exists($cod, $eventiPerScuola)) {
+        $eventiPerScuola[$cod] = ['nome' => $ev['nome_scuola'], 'eventi' => []];
+    }
+    $eventiPerScuola[$cod]['eventi'][] = $ev;
+}
+uasort($eventiPerScuola, fn($a, $b) => strcmp($a['nome'], $b['nome']));
+
 $leafletCSS = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">';
 render_head_pubblica('Eventi', $leafletCSS);
 render_navbar_pubblica('eventi.php');
@@ -98,6 +110,62 @@ render_navbar_pubblica('eventi.php');
             </div>
         </div>
         <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Eventi per scuola -->
+    <?php if (!empty($eventiPerScuola)): ?>
+    <h2 class="sez-title mt-5">Eventi per scuola</h2>
+    <div class="accordion" id="accordionEventiScuole">
+        <?php $i = 0; foreach ($eventiPerScuola as $cod => $gruppo): ?>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button <?= $i > 0 ? 'collapsed' : '' ?>"
+                        type="button" data-bs-toggle="collapse"
+                        data-bs-target="#scuola-ev-<?= $i ?>">
+                    <span class="fw-semibold"><?= htmlspecialchars($gruppo['nome']) ?></span>
+                    <span class="badge bg-secondary rounded-pill ms-2"><?= count($gruppo['eventi']) ?></span>
+                </button>
+            </h2>
+            <div id="scuola-ev-<?= $i ?>" class="accordion-collapse collapse <?= $i === 0 ? 'show' : '' ?>">
+                <div class="accordion-body">
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <?php foreach ($gruppo['eventi'] as $ev): ?>
+                        <div class="col">
+                            <div class="scheda h-100">
+                                <?php if ($ev['path_foto']): ?>
+                                <img src="../<?= htmlspecialchars($ev['path_foto']) ?>" class="scheda-foto"
+                                     alt="<?= htmlspecialchars($ev['titolo']) ?>">
+                                <?php else: ?>
+                                <div class="scheda-placeholder"><i class="bi bi-calendar-event"></i></div>
+                                <?php endif; ?>
+                                <div class="p-3">
+                                    <div class="d-flex gap-2 mb-2">
+                                        <span class="badge badge-scol">Scolastico</span>
+                                        <?php if ($ev['prenotabile']): ?>
+                                        <span class="badge bg-success">Prenotabile</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <h6 class="fw-semibold"><?= htmlspecialchars($ev['titolo']) ?></h6>
+                                    <p class="text-muted mb-2" style="font-size:.85rem;">
+                                        <?= htmlspecialchars($ev['descrizione_breve']) ?>
+                                    </p>
+                                    <div class="d-flex flex-wrap gap-3" style="font-size:.82rem;color:var(--muted);">
+                                        <span>
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            <?= date('d/m/Y H:i', strtotime($ev['ora_inizio'])) ?>
+                                            → <?= date('d/m/Y H:i', strtotime($ev['ora_fine'])) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php $i++; endforeach; ?>
     </div>
     <?php endif; ?>
 
