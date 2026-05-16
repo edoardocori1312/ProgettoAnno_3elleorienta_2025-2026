@@ -231,3 +231,6 @@ body {
 @media (min-width: 576px) and (max-width: 991.98px) {
     .grid-third { grid-column: span 6; }
 }
+
+.table-zone th { font-size:.78rem; text-transform:uppercase; letter-spacing:.8px; color:#7f8c8d; }
+.table-zone td { font-size:.88rem; vertical-align:middle; }
