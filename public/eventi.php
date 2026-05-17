@@ -43,12 +43,7 @@ render_head_pubblica('Eventi', $leafletCSS);
 render_navbar_pubblica('eventi.php');
 ?>
 
-<section class="hero" style="padding:40px 0;">
-    <div class="container">
-        <h1 style="font-size:1.8rem;">Eventi</h1>
-        <p style="font-size:1rem;opacity:.85;">Scopri gli eventi di orientamento sul territorio.</p>
-    </div>
-</section>
+<?php render_hero_banner('Eventi', 'Scopri gli eventi di orientamento sul territorio.'); ?>
 
 <div class="container py-5">
 

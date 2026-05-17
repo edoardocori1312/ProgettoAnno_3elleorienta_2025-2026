@@ -31,23 +31,25 @@ function chiudi_pagina_pubblica(): void { ?>
 
 function render_navbar_pubblica(string $attiva = ''): void {
     $voci = [
-        'index.php'    => 'Home',
-        'ambiti.php'   => 'Ambiti',
-        'orientati.php'=> 'Orientati',
-        'eventi.php'   => 'Eventi',
+        'index.php'     => 'Home',
+        'progetti.php'  => 'Progetti',
+        'ambiti.php'    => 'Ambiti',
+        'orientati.php' => 'Orientati',
+        'eventi.php'    => 'Eventi',
+        'linkutili.php' => 'Link Utili',
     ]; ?>
 <header class="site-header">
-  <nav class="navbar navbar-expand-lg">
-    <div class="container-fluid px-4">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
       <a class="navbar-brand" href="index.php">
         <img src="assets/img/logo.png" alt="Logo 3elleorienta" class="navbar-logo">
       </a>
-      <button class="navbar-toggler border-0" type="button"
+      <button class="navbar-toggler" type="button"
               data-bs-toggle="collapse" data-bs-target="#navPubblica">
-        <i class="bi bi-list" style="font-size:1.6rem;"></i>
+        <i class="bi bi-caret-down-square"></i>
       </button>
       <div class="collapse navbar-collapse" id="navPubblica">
-        <ul class="navbar-nav ms-auto" id="navLinks">
+        <ul class="navbar-nav">
           <?php foreach ($voci as $href => $label): ?>
           <li class="nav-item">
             <a class="nav-link<?= $attiva === $href ? ' active' : '' ?>"
@@ -62,28 +64,45 @@ function render_navbar_pubblica(string $attiva = ''): void {
 <?php }
 
 function render_footer(): void { ?>
-<footer class="footer mt-auto py-4 bg-dark text-white">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <p class="mb-1 fw-semibold">Svelati — Reti territoriali per l'orientamento</p>
-        <p class="text-secondary mb-0" style="font-size:.88rem;">
-          Supportiamo studenti e famiglie nel percorso di scelta formativa e professionale.
-        </p>
-      </div>
-      <div class="col-md-3">
-        <p class="mb-1 fw-semibold" style="font-size:.88rem;">Contatti</p>
-        <ul class="list-unstyled text-secondary mb-0" style="font-size:.85rem;">
-          <li>Jesi, Marche</li>
-          <li><a href="mailto:info@svelati.it" class="text-secondary">info@svelati.it</a></li>
-        </ul>
-      </div>
-      <div class="col-md-3 text-md-end mt-3 mt-md-0">
-        <p class="text-secondary mb-0" style="font-size:.82rem;">© 2026 Svelati. Tutti i diritti riservati.</p>
-      </div>
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <p class="footer__description">
+        Reti territoriali per l'orientamento.<br>
+        Supportiamo studenti e famiglie nel percorso di scelta formativa e professionale.
+      </p>
+    </div>
+    <div class="footer__col">
+      <h4 class="footer__col-title">Contatti</h4>
+      <ul class="footer__links">
+        <li>Jesi, Marche</li>
+        <li><a href="mailto:info@svelati.it">info@svelati.it</a></li>
+        <li><a href="tel:+390000000000">+39 000 000 0000</a></li>
+      </ul>
+    </div>
+    <div class="footer__cta">
+      <a href="mailto:info@svelati.it" class="footer__btn footer__btn--secondary">Contattaci</a>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <p class="footer__copyright">© 2026 Svelati. Tutti i diritti riservati.</p>
+    <div class="footer__legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Cookie Policy</a>
     </div>
   </div>
 </footer>
+<?php }
+
+function render_hero_banner(string $titolo, string $sub = ''): void { ?>
+<section class="page-banner">
+  <div class="container">
+    <h1><?= htmlspecialchars($titolo) ?></h1>
+    <?php if ($sub !== ''): ?>
+    <p><?= htmlspecialchars($sub) ?></p>
+    <?php endif; ?>
+  </div>
+</section>
 <?php }
 
 // ────────────────────────────────────────────────────────────────────────────
