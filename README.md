@@ -26,6 +26,33 @@ admin/gestione/gestione_*.php      # Funzioni DB per ogni dominio
 uploads/                           # Foto caricate dagli utenti
 ```
 
+## Riorganizzazione rispetto a `main`
+
+Il branch `main` conserva il lavoro originale suddiviso per gruppi: circa 9 cartelle
+separate (`Eventi/`, `Front End/`, `LinkUtili/`, `Progetti/`, `Zone/`, `Login_…`,
+`backend_scuole_5DM/`, ecc.), ognuna con la propria connessione al DB, il proprio CSS
+e la propria logica di login — codice fortemente duplicato e difficile da mantenere.
+
+Questo branch (`matteo`) consolida tutto in un'unica applicazione PHP con struttura
+convenzionale:
+
+| Cosa                         | In `main`                                 | In `matteo`                          |
+|------------------------------|-------------------------------------------|--------------------------------------|
+| Connessione DB               | `daticonnessione.php` in ogni cartella    | `config/db.php` (unica per tutti)    |
+| Autenticazione e sessione    | Login duplicato per ogni gruppo           | `lib/auth.php`                       |
+| Layout (nav, footer)         | Inlinato ovunque                          | `lib/layout.php`                     |
+| Upload foto e geocodifica    | Sparso tra le cartelle                    | `lib/foto.php`, `lib/geo.php`        |
+| Schema e dati di test        | SQL inconsistenti e sovrapposti           | `db/schema.sql`, `db/seed.sql`       |
+| Sito pubblico                | `Front End/`, `Progetto3elleUnitoFrontend/` | `public/`                          |
+| Pannello admin               | `Progetto3elleUnitoBackend/`, altri       | `admin/` + `admin/gestione/`         |
+| Ambiente di sviluppo         | Manuale (XAMPP / server locale)           | Docker Compose (un solo comando)     |
+
+**Risultato:** ~13 600 righe duplicate rimosse, ~5 200 righe consolidate aggiunte.
+La storia dei commit originali rimane intatta su `main`.
+
+Per continuare lo sviluppo, lavora su `public/`, `admin/` e `lib/`.
+Non creare nuove cartelle di gruppo come in `main`.
+
 ## Setup
 
 ### 1. Database
@@ -76,11 +103,15 @@ Aggiungi il logo del progetto in:
 
 Ambiente completo (MariaDB + phpMyAdmin + app) con un solo comando. Il codice è bind-mountato: le modifiche su host sono subito visibili nel container.
 
-### Requisiti
+### GitHub Codespaces (consigliato)
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+Apri il repository su GitHub e clicca **Code → Codespaces → Create codespace on matteo**.
+Il container si costruisce automaticamente grazie a `.devcontainer/`: le porte 8080 e 8081
+vengono inoltrate e il sito è subito accessibile dal browser integrato di VS Code.
 
-### Primo avvio
+### Avvio locale
+
+**Requisiti:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ```bash
 docker compose up -d --build

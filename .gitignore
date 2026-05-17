@@ -4,3 +4,12 @@ uploads/*
 public/assets/img/logo.png
 admin/assets/img/logo.png
 .env
+
+# QA / dev artifacts (screenshots, browser automation)
+.playwright-mcp/
+/cmp-*.png
+/fix-*.png
+/local-*.png
+/online-*.png
+/restyle-*.png
+/verify-*.jpg

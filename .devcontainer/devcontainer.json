@@ -1,0 +1,13 @@
+{
+  "name": "Svelati 3elleorienta",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/var/www/html",
+  "forwardPorts": [8080, 8081],
+  "portsAttributes": {
+    "8080": { "label": "Sito + Admin" },
+    "8081": { "label": "phpMyAdmin" }
+  },
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "echo 'Stack pronto — sito su :8080/public/, admin su :8080/admin/, phpMyAdmin su :8081'"
+}

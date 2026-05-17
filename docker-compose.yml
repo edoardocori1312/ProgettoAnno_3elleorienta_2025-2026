@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:11
+    image: mariadb:11.4
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: treelleorienta
@@ -32,7 +32,7 @@ services:
         condition: service_healthy
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin:5.2
     environment:
       PMA_HOST: db
     ports:
