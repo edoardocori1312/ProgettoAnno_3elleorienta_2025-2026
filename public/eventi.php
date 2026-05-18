@@ -47,6 +47,12 @@ render_navbar_pubblica('eventi.php');
 
 <div class="container py-5">
 
+    <div class="d-flex justify-content-end mb-4">
+        <a href="pdf/report_eventi.php" class="btn btn-danger" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Scarica PDF eventi
+        </a>
+    </div>
+
     <!-- Mappa eventi territoriali -->
     <?php if (!empty($eventiMappa)): ?>
     <h2 class="sez-title">Mappa eventi territoriali</h2>
