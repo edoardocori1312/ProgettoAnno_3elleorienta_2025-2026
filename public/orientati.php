@@ -32,6 +32,7 @@ if ($filtroAmbito > 0) {
 }
 
 $sql = 'SELECT s.COD_meccanografico, s.nome, s.descrizione, s.sito, s.via, s.n_civico,
+               s.latitudine, s.longitudine,
                c.nome AS nome_citta, z.nome AS nome_zona, f.path_foto,
                GROUP_CONCAT(DISTINCT a.nome  ORDER BY a.nome  SEPARATOR \', \') AS ambiti_nomi,
                GROUP_CONCAT(         i.nome  ORDER BY si.n_ordine SEPARATOR \', \') AS indirizzi
@@ -59,7 +60,8 @@ if ($types === '') {
 
 $conn->close();
 
-render_head_pubblica('Orientati — Esplora le scuole');
+$leafletCSS = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">';
+render_head_pubblica('Orientati — Esplora le scuole', $leafletCSS);
 render_navbar_pubblica('orientati.php');
 render_hero_banner('Orientati', 'Esplora le scuole del territorio e trova il percorso giusto per te');
 ?>
@@ -168,6 +170,9 @@ render_hero_banner('Orientati', 'Esplora le scuole del territorio e trova il per
                                 <?= htmlspecialchars($s['nome_citta']) ?>
                             </p>
                             <?php endif; ?>
+                            <?php if ($s['latitudine'] && $s['longitudine']): ?>
+                            <div id="mappa-sc-<?= $i ?>" style="height:180px;border-radius:8px;" class="mt-2"></div>
+                            <?php endif; ?>
                             <?php if ($s['sito']): ?>
                             <a href="<?= htmlspecialchars($s['sito']) ?>" target="_blank" rel="noopener"
                                class="btn btn-outline-primary btn-sm mt-2">
@@ -184,6 +189,36 @@ render_hero_banner('Orientati', 'Esplora le scuole del territorio e trova il per
     <?php endif; ?>
 
 </div>
+
+<?php
+$mapData = [];
+foreach ($scuole as $i => $s) {
+    if ($s['latitudine'] && $s['longitudine']) {
+        $mapData[$i] = ['lat' => (float)$s['latitudine'], 'lng' => (float)$s['longitudine']];
+    }
+}
+if (!empty($mapData)):
+?>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const mappeScuole = <?= json_encode($mapData) ?>;
+const mappeInit   = {};
+document.querySelectorAll('.accordion-collapse').forEach(el => {
+    el.addEventListener('show.bs.collapse', function () {
+        const idx  = this.id.replace('sc-', '');
+        const dati = mappeScuole[idx];
+        if (!dati || mappeInit[idx]) return;
+        const m = L.map('mappa-sc-' + idx).setView([dati.lat, dati.lng], 15);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 18
+        }).addTo(m);
+        L.marker([dati.lat, dati.lng]).addTo(m);
+        mappeInit[idx] = true;
+    });
+});
+</script>
+<?php endif; ?>
 
 <?php render_footer(); ?>
 <?php chiudi_pagina_pubblica(); ?>
