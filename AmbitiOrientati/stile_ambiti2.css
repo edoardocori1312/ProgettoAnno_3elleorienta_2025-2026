@@ -1,0 +1,137 @@
+:root {
+    --teal:       #2a9d8f;
+    --teal-dark:  #1f7a6e;
+    --teal-light: #e8f7f6;
+    --blue:       #264653;
+    --muted:      #6b7280;
+    --border:     #dee2e6;
+    --bg:         #f8fafa;
+    --text:       #1a1a2e;
+    --accent:     #e9c46a;
+}
+
+/* ---- Header ---- */
+.header {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--teal-dark) 100%);
+    color: white;
+    padding: 52px 24px 44px;
+    text-align: center;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+.header h1 { font-size: 2.4rem; font-weight: 700; margin-bottom: 8px; }
+.header p  { opacity: .8; font-size: 1rem; }
+
+/* ---- Container ---- */
+.container {
+    padding: 30px 40px;
+}
+
+/* ---- Card ambito ---- */
+.card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: box-shadow .2s, border-color .2s;
+    padding: 0;
+    width: auto;
+    box-shadow: none;
+}
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.09);
+    border-color: var(--teal);
+}
+
+/* ---- Info row (layout interno card) ---- */
+.info {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    padding: 20px 22px;
+}
+
+/* ---- Testo (titolo + descrizione + link + bottone) ---- */
+.info > div:not(.image) {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* ---- Titolo ambito ---- */
+.titolo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--teal-dark);
+    margin-bottom: 4px;
+}
+
+/* ---- Descrizione ---- */
+.descrizione {
+    font-size: .9rem;
+    color: #374151;
+    line-height: 1.7;
+}
+
+/* ---- Link scuole nella descrizione ---- */
+.descrizione a {
+    display: inline-block;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    border: 1px solid rgba(42,157,143,.25);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: .82rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin: 2px 4px 2px 0;
+    transition: background .2s, color .2s;
+}
+.descrizione a:hover {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+}
+
+/* ---- Immagine ---- */
+.image {
+    flex: 1;
+    display: flex;
+    max-width: 280px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ---- Bottone ---- */
+.btn {
+    width: 150px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--teal);
+    color: white;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 600;
+    transition: background .2s;
+    align-self: flex-start;
+}
+.btn:hover {
+    background: var(--teal-dark);
+    color: white;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 576px) {
+    .info { flex-direction: column; padding: 14px 16px; }
+    .image { max-width: 100%; height: 160px; }
+    .container { padding: 16px; }
+}

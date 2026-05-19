@@ -1,0 +1,114 @@
+
+
+
+.hero-banner {
+    background: #e0e0e0;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 2px solid #999;
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    border: 1px solid #000;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+.list-item {
+    border: 1px solid #666;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+
+
+/* === TITOLO PAGINA === */
+.pagina-titolo {
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin-bottom: 50px;
+    color: #0D2C3E;
+    text-align: left;
+    display: inline-block;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #1DADA0;
+}
+
+/* === CARD PROGETTO === */
+.progetto-aperto {
+    margin-bottom: 0;
+    padding: 32px 24px;
+    border-left: 3px solid transparent;
+    border-radius: 6px;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.progetto-aperto:hover {
+    border-left-color: #1DADA0;
+    background-color: #f7fffe;
+}
+
+.progetto-aperto .row {
+    gap: 0;
+}
+
+.progetto-aperto .col-md-4 {
+    padding-right: 24px;
+}
+
+/* === IMMAGINE === */
+.img-fluida {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.progetto-aperto:hover .img-fluida {
+    transform: scale(1.02);
+}
+
+/* === TESTI === */
+.titolo-progetto-aperto {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0D2C3E;
+    margin-top: 0;
+    margin-bottom: 15px;
+    transition: color 0.2s ease;
+}
+
+.progetto-aperto:hover .titolo-progetto-aperto {
+    color: #1DADA0;
+}
+
+.testo-progetto-aperto {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+/* === SEPARATORE === */
+.separatore-progetto {
+    margin: 0 24px;
+    border: 0;
+    border-top: 1px solid #eee;
+    opacity: 1;
+}
+
+.progetto-aperto:last-of-type + .separatore-progetto,
+.progetto-aperto:last-of-type .separatore-progetto {
+    display: none;
+}
