@@ -42,7 +42,7 @@ if(count($events) === 0){
         <img src="<?php echo htmlspecialchars($img); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($evt['title']); ?>">
         <div class="card-body">
           <h5 id="evt-<?php echo htmlspecialchars($evt['id']); ?>-title" class="card-title"><?php echo htmlspecialchars($evt['title']); ?></h5>
-          <p class="card-text"><?php echo htmlspecialchars($evt['summary'] ?? substr($evt['description'] ?? '',0,140)); ?></p>
+          <p class="card-text"><?php echo htmlspecialchars($evt['summary'] ?? SostituisciLink(substr($evt['description']) ?? '',0,140)); ?></p>
           <div class="mt-2"><small class="text-muted"><?php echo htmlspecialchars($date . ' • ' . $address); ?></small></div>
         </div>
       </article>
