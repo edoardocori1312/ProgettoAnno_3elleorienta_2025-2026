@@ -18,11 +18,17 @@
         /* Annulla gli override di provaMappa.css sulla navbar Bootstrap */
         .site-header {
             display: block !important;
-            position: static !important;
+            position: sticky !important;
+            top: 0 !important;
             height: auto !important;
             max-height: none !important;
             overflow: visible !important;
             padding: 0 !important;
+            z-index: 1030 !important;
+        }
+        .site-header .nav-link {
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
         }
         html, body {
             height: auto !important;
