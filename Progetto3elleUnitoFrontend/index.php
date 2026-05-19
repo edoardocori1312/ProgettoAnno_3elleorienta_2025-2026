@@ -19,15 +19,15 @@ include("stile/navbar.html");
 <body>
 
 <?php
+$logo_svelati  = "img/logoSvelati.jpg";
+$titolo_progetto = "SVELATI";
 
-
-$logo_svelati = "img/logoSvelati.jpg";
-
-$sql = "SELECT f.path_foto FROM Progetti p JOIN Foto f ON f.ID_foto = p.id_foto WHERE p.n_ordine = 1 AND p.data_eliminazione IS NULL AND f.data_eliminazione IS NULL LIMIT 1";
+$sql = "SELECT p.nome, f.path_foto FROM Progetti p JOIN Foto f ON f.ID_foto = p.id_foto WHERE p.n_ordine = 1 AND p.data_eliminazione IS NULL AND f.data_eliminazione IS NULL LIMIT 1";
 
 $result = $conn->query($sql);
 if ($result && $row = $result->fetch_assoc()) {
-    $logo_svelati = "https://" . $row["path_foto"];
+    $logo_svelati    = "https://" . $row["path_foto"];
+    $titolo_progetto = strtoupper($row["nome"]);
 }
 ?>
 
@@ -86,41 +86,13 @@ if ($result && $row = $result->fetch_assoc()) {
     </div>
 
     <div class="progetto-text">
-      <div class="progetto-title">SVELATI</div><br>
+      <div class="progetto-title"><?php echo htmlspecialchars($titolo_progetto); ?></div><br>
       <div class="progetto-subtitle">Piattaforma 3elleorienta</div>
 
       <div class="progetto-buttons">
-        <a href="orientati.php" class="btn-orientati">Orientati</a>
+        <a href="/Progetto3elleUnitoFrontend/orientati.php" class="btn-orientati">Orientati</a>
         <a href="/Progetto3elleUnitoFrontend/eventi/index.php" class="btn-eventi">Eventi</a>
       </div>
-    </div>
-
-  </div>
-</section>
-
-<section class="section-ambiti">
-  <h3>I nostri ambiti</h3>
-
-  <div class="ambiti-grid">
-
-    <div class="ambito-card">
-      <i class="bi bi-mortarboard"></i>
-      <h4>Scuola &amp; Formazione</h4>
-    </div>
-
-    <div class="ambito-card">
-      <i class="bi bi-briefcase"></i>
-      <h4>Lavoro &amp; Professioni</h4>
-    </div>
-
-    <div class="ambito-card">
-      <i class="bi bi-people"></i>
-      <h4>Territorio &amp; Reti</h4>
-    </div>
-
-    <div class="ambito-card">
-      <i class="bi bi-lightbulb"></i>
-      <h4>Innovazione</h4>
     </div>
 
   </div>
