@@ -73,64 +73,25 @@ html, body {
 }
 
 /* Header sopra il filtro: logo a sinistra, menu a destra */
-.map-header, .site-header{
+.map-header{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:8px;
+  margin-bottom:8px;
 }
-.map-header{ margin-bottom:8px; }
-.site-header{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:56px;
-  padding:6px 16px;
-  background: rgba(255,255,255,0.95);
-  z-index: 10002;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-}
-.map-header .logo,
-.site-header .logo{
+.map-header .logo{
   display:block;
-  height:40px; /* altezza del logo in header (non usata quando il logo è in footer) */
+  height:40px;
   width:auto;
 }
-.map-header .header-menu, .site-header .header-menu{ flex: 0 0 48%; }
-.map-header .header-menu .form-select, .site-header .header-menu .form-select{ width:100%; }
-
-/* Footer che contiene il logo ridotto */
-.site-header{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:56px;
-  padding:6px 16px;
-  background: rgba(255,255,255,0.95);
-  z-index: 10002;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-}
-.map-header .logo,
-.site-header .logo{
-  display:block;
-  height:40px; /* altezza del logo in header (non usata quando il logo è in footer) */
-  width:auto;
-}
-.map-header .header-menu, .site-header .header-menu{ flex: 0 0 48%; }
-.map-header .header-menu .form-select, .site-header .header-menu .form-select{ width:100%; }
-
-/* Assicura che la pagina non venga coperta dall'header fisso */
-body{ padding-top: 68px; }
-
-/* Logo ridotto nel header */
-.site-header .logo{ height:36px; }
+.map-header .header-menu{ flex: 0 0 48%; }
+.map-header .header-menu .form-select{ width:100%; }
 
 /* Riporta la mini-mappa alla sua distanza originale dal fondo */
 #map { bottom: 20px; }
 
-/* sposta leggermente la search-container più in basso se il header è fissato in alto */
+/* sposta leggermente la search-container */
 .search-container{ padding-top:8px; }
 
 /* Stili per le card centrali sotto il filtro
@@ -266,24 +227,4 @@ body{ padding-top: 68px; }
 /* nascondi la attribuzione se vuoi in ambienti embedded, altrimenti lasciala */
 #map .leaflet-control-attribution { font-size: 10px; }
 
-/* Override finale: forziamo il logo nell'header a non eccedere e non deformare il layout */
-.site-header{
-  max-height:76px; /* altezza massima dell'header */
-  overflow:hidden; /* evita che il logo esca dall'header */
-}
-.site-header .logo{
-  display:block;
-  max-height:48px; /* non più grande di 48px */
-  height:auto !important;
-  width:auto;
-  max-width:220px; /* evita che occupi tutta la larghezza */
-  object-fit:contain;
-}
 .logo-wrap{ display:flex; align-items:center; gap:8px; }
-
-/* Riduci ulteriormente il logo su schermi piccoli */
-@media (max-width:480px){
-  .site-header{ padding:6px 10px; }
-  .site-header .logo{ max-height:32px; max-width:160px; }
-  body{ padding-top: 56px; }
-}
