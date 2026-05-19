@@ -13,7 +13,7 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto" id="navLinks">
+        <ul class="navbar-nav" id="navLinks">
           <li class="nav-item"><a class="nav-link" href="/Progetto3elleUnitoFrontend/index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="/Progetto3elleUnitoFrontend/progetti.php">Progetti</a></li>
           <li class="nav-item"><a class="nav-link" href="/Progetto3elleUnitoFrontend/ambiti.php">Ambiti</a></li>
@@ -31,10 +31,10 @@
 
 <script>
 (function () {
-  var path = window.location.pathname;
+  var path = window.location.pathname.replace(/\/$/, '');
   document.querySelectorAll('#navLinks .nav-link').forEach(function (a) {
-    var href = a.getAttribute('href');
-    if (href && path.endsWith(href)) {
+    var href = (a.getAttribute('href') || '').replace(/\/$/, '');
+    if (href && path === href) {
       a.classList.add('active');
       a.setAttribute('aria-current', 'page');
     }
