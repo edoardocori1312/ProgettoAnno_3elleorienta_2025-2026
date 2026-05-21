@@ -1,13 +1,10 @@
 <?php
-
     session_start();
     include("daticonnessione.php");
 
+    $conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NAMEDB);
 
-    $conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NAMEDB, $PORTDB);
-
-    if($conn->connect_error)
-    {
+    if($conn->connect_error) {
         die("Connessione non stabilita: " . $conn->connect_error);
     }
 
@@ -19,71 +16,41 @@
               
     $stmt = $conn->prepare($query);
     
-    if($stmt === false)
-    {
+    if($stmt === false) {
         die("Errore nello statement");
     }
 
-    $nuovoProgetto = "";
+    $htmlProgetti = "";
 
-    
-    if($stmt->execute())
-    {
+    if($stmt->execute()) {
         $risultato = $stmt->get_result();
         
-        if($risultato->num_rows > 0)
-        {
-            while($riga = $risultato->fetch_object())
-            {
-                // Gestione del titolo 
-                if ($riga->titolo !== null)
-                {
-                    $titolo = htmlspecialchars($riga->titolo);
-                }
-                else
-                {
-                    $titolo = "Titolo non disponibile";
-                }
-                
-                // Gestione della descrizione 
-                if ($riga->descrizione !== null)
-                {
-                    $descrizione = htmlspecialchars($riga->descrizione);
-                }
-                else
-                {
-                    $descrizione = "Nessuna descrizione presente.";
-                }
-                
-                // Gestione della foto 
-                if ($riga->path_foto !== null && trim($riga->path_foto) !== '')
-                {
-                    $path_foto = htmlspecialchars($riga->path_foto);
-                }
-                else
-                {
-                    
-                    $path_foto = ""; 
-                }
+        if($risultato->num_rows > 0) {
+            while($riga = $risultato->fetch_object()) {
+                $titolo = $riga->titolo ? htmlspecialchars($riga->titolo) : "Titolo Progetto";
+                $descrizione = $riga->descrizione ? htmlspecialchars($riga->descrizione) : "";
+                $path_foto = ($riga->path_foto && trim($riga->path_foto) !== '') ? htmlspecialchars($riga->path_foto) : "img/placeholder.png";
 
-                $nuovoProgetto .= "
-                <div>
-                    <img src='{$path_foto}' alt='Foto del progetto: {$titolo}' class='card-img'>
-                    <h2>{$titolo}</h2>
-                    <p>{$descrizione}</p>
-                </div>";
+                // Layout a card ispirato allo screenshot
+                $htmlProgetti .= "
+                <article class='custom-card'>
+                    <div class='custom-card-content'>
+                        <h2 class='custom-card-title'>{$titolo}</h2>
+                        <div class='custom-card-desc'>{$descrizione}</div>
+                        
+                        <div class='custom-card-tags'>
+                            <span class='custom-card-tag'>PROGETTO FORMATIVO</span>
+                        </div>
+                    </div>
+                    <div class='custom-card-img'>
+                        <img src='{$path_foto}' alt='{$titolo}'>
+                    </div>
+                </article>";
             }
-        }
-        else 
-        {
-            $nuovoProgetto = "<p>Nessun progetto disponibile al momento.</p>";
+        } else {
+            $htmlProgetti = "<p class='text-center py-5'>Nessun progetto disponibile.</p>";
         }
     }
-    else
-    {
-        $nuovoProgetto = "<p>Si è verificato un errore durante il caricamento dei progetti.</p>";
-    }
-
     $stmt->close();
     $conn->close();
 ?>
@@ -93,15 +60,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progetti</title>
+    <title>Progetti | 3elleorienta</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="stile.css?v=<?php echo filemtime('stile.css'); ?>"> 
 </head>
 <body>
 
-    <h1>Progetti</h1>
+    <?php include("navbar.html"); ?>
 
-    <?php 
-        echo $nuovoProgetto; 
-    ?>
+    <section class="hero-page">
+        <h1>Progetti</h1>
+        <p>Esplora le iniziative e i percorsi formativi</p>
+    </section>
 
+    <main class="lista-card-container">
+        <?php echo $htmlProgetti; ?>
+    </main>
+
+    <?php include("footer.html"); ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
