@@ -1,0 +1,671 @@
+/* ── 1. Reset & variabili ─────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+:root {
+    --brand-dark: #0d2c3e;
+    --brand-teal: #1dada0;
+    --brand-orange: #f5a623;
+    --brand-light: #b2e8e2;
+    --bg-page: #feffff;
+    --header-h: 56px;
+}
+
+
+/* ── 2. Layout globale ───────────────────────────────────── */
+html,
+body {
+    height: 100%;
+    background-color: var(--bg-page);
+}
+
+/* Compensa l'header fisso */
+body {
+    padding-top: calc(var(--header-h) + 12px);
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.container a {
+    max-width: 1000px;
+    margin: right;
+    padding: 20px;
+}
+
+
+/* ── 3. Navbar / site-header ─────────────────────────────── */
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-h);
+    padding: 6px 16px;
+    background: #ffffff;
+    border-bottom: 3px solid var(--brand-dark);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .08);
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-height: 76px;
+    overflow: hidden;
+}
+
+.site-header .logo,
+.site-header .navbar-brand img {
+    display: block;
+    max-height: 48px;
+    height: auto;
+    width: auto;
+    max-width: 220px;
+    object-fit: contain;
+}
+
+.logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Hover link navbar */
+.site-header .nav-link:hover,
+.site-header .nav-link:focus {
+    background-color: #f0f4f6;
+    color: var(--brand-dark) !important;
+}
+
+/* Toggler mobile */
+.site-header .navbar-toggler {
+    border-color: rgba(0, 0, 0, .2);
+}
+
+.hero-banner {
+    position: relative;
+    /* serve come riferimento per il titolo */
+    width: 100%;
+    max-height: 400px;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.hero-banner img {
+    width: 100%;
+    height: 400px;
+    filter: brightness(50%); 
+    transition: filter 0.3s ease;
+    object-fit: cover;
+    display: block;
+}
+
+/* Titolo sovrapposto in basso a sinistra */
+.hero-banner .page-title-wrapper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    line-height: 1.2;
+}
+
+.hero-banner .banner-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.hero-banner h1 {
+    display: inline-block;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 3.8rem;
+    font-weight: 1000;
+    margin: 0;
+    letter-spacing: .02em;
+    padding-left: 10px;
+    border-left: 6px solid var(--brand-orange);
+    line-height: 1;
+
+    @media (max-width: 600px) {
+        .hero-banner h1 {
+            font-size: 2.4rem;
+            padding-left: 12px;
+            border-left-width: 4px;
+        }
+
+        .hero-banner .page-title-wrapper {
+            bottom: 16px;
+        }
+    }
+}
+
+
+.btn-calendario {
+    display: inline-block;
+    background: none;
+    border: none;
+    color: var(--brand-dark);
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.btn-calendario:hover {
+    color: var(--brand-teal);
+    text-decoration: underline;
+}
+
+/* ── 4. Search container ─────────────────────────────────── */
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    margin: -8px 20px 16px auto;
+    padding-right: 12px;
+    padding-top: 8px;
+}
+
+.search-container .input-group {
+    width: 100%;
+}
+
+.search-container .list-group {
+    max-height: 240px;
+    overflow: auto;
+}
+
+
+/* ── 5. Cards wrapper & info-card ────────────────────────── */
+.cards-wrapper {
+    max-width: 1100px;
+    margin: 20px auto 36px auto;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 12px;
+}
+
+
+.info-card {
+    width: 460px;
+    min-height: 220px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    background: #fff;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+
+.info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .10);
+}
+
+.info-card .card-img-top {
+    display: block;
+    width: 45%;
+    /* immagine occupa ~metà card */
+    height: auto;
+    align-self: stretch;
+    /* tocca top e bottom della card */
+    margin: 0;
+    object-fit: cover;
+    border-radius: 0;
+}
+
+.info-card .card-body {
+    flex: 1 1 auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.info-card .card-title {
+    font-size: 1.05rem;
+    margin: 0 0 6px;
+}
+
+.info-card .card-text {
+    font-size: .95rem;
+    margin: 0;
+    color: #444;
+}
+
+
+/* ── 6. Modal card ───────────────────────────────────────── */
+.card-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 12000;
+}
+
+.card-modal[aria-hidden="false"] {
+    display: flex;
+}
+
+.card-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+}
+
+.card-modal-inner {
+    position: relative;
+    width: min(920px, 94%);
+    max-height: 90vh;
+    background: #fff;
+    border-radius: 8px;
+    overflow: auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
+    z-index: 12001;
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    align-items: flex-start;
+}
+
+.card-modal-close {
+    position: absolute;
+    right: 8px;
+    top: 6px;
+    background: transparent;
+    border: 0;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 12002;
+}
+
+.modal-img {
+    max-width: 420px;
+    width: 40%;
+    height: auto;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.modal-content {
+    width: 60%;
+    padding: 8px;
+}
+
+.modal-content h4 {
+    margin: 0 0 8px;
+}
+
+.modal-content p {
+    margin: 0;
+    color: #333;
+}
+
+#map {
+    position: relative;
+    padding: 10px 14px;
+    --mm-size: 200px;
+    width: 350px;
+    height: var(--mm-size);
+    border-radius: 0%;
+    margin-bottom: 20px;
+    overflow: hidden;
+    z-index: 9999;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+    border: 4px solid rgba(255, 255, 255, .95);
+    background: #eaeaea;
+    pointer-events: auto;
+}
+
+#map .coord-label {
+    position: static;
+    right: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, .65);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.coord-label.hidden {
+    display: none;
+}
+
+/* Nasconde attributi/scala nella mini-mappa */
+#map .leaflet-control-attribution,
+#map .leaflet-control-scale {
+    display: none !important;
+}
+
+/* ── 7b. Container mappa + slider raggio ─────────────────── */
+.map-container {
+    margin-left: auto;
+    margin-right: 20px;
+    width: 350px;
+}
+
+.radius-control {
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--brand-dark);
+}
+
+.radius-control label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.radius-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--brand-teal);  /* colore del cursore/barra */
+    cursor: pointer;
+}
+
+/* Allinea il #map all'interno del nuovo container (rimuove i suoi margini propri) */
+.map-container #map {
+    margin: 0;
+    width: 100%;
+}
+
+.date-filter-control {
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--brand-dark);
+    background: #fff;
+}
+
+.date-filter-control label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.date-filter-control input[type="date"] {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--brand-dark);
+    accent-color: var(--brand-teal);
+    cursor: pointer;
+}
+
+.date-filter-control input[type="date"]:focus {
+    outline: none;
+    border-color: var(--brand-teal);
+    box-shadow: 0 0 0 3px rgba(29, 173, 160, .15);
+}
+
+.btn-reset-data {
+    margin-top: 6px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-reset-data:hover {
+    color: var(--brand-dark);
+    text-decoration: underline;
+}
+
+.radius-control {
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--brand-dark);
+}
+
+.radius-control label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.radius-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--brand-teal);  /* colore del cursore/barra */
+    cursor: pointer;
+}
+
+/* Nascondi tutto il container insieme alla mappa su mobile */
+@media (max-width: 1024px) {
+    .map-container { display: none !important; }
+}
+
+
+/* ── 8. Footer ───────────────────────────────────────────── */
+.footer {
+    background: var(--brand-dark);
+    padding: 48px 40px 24px;
+}
+
+.footer__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.footer__brand {
+    flex: 1;
+    min-width: 220px;
+}
+
+.footer__logo {
+    height: 48px;
+    margin-bottom: 16px;
+}
+
+.footer__description {
+    color: var(--brand-light);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.footer__col {
+    min-width: 140px;
+}
+
+.footer__col-title {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+}
+
+.footer__links {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer__links li,
+.footer__links a {
+    color: var(--brand-light);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.footer__links a:hover {
+    color: #fff;
+}
+
+.footer__cta {
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footer__btn {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity .2s;
+}
+
+.footer__btn:hover {
+    opacity: .85;
+}
+
+.footer__btn--primary {
+    background: var(--brand-teal);
+    color: #fff;
+}
+
+.footer__btn--secondary {
+    background: var(--brand-orange);
+    color: #fff;
+}
+
+.footer__bottom {
+    max-width: 1100px;
+    margin: 32px auto 0;
+    border-top: 1px solid rgba(255, 255, 255, .1);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.footer__copyright {
+    color: #4a5568;
+    font-size: 13px;
+}
+
+.footer__legal {
+    display: flex;
+    gap: 20px;
+}
+
+.footer__legal a {
+    color: #4a5568;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.footer__legal a:hover {
+    color: var(--brand-light);
+}
+
+
+/* ── 9. Media query ──────────────────────────────────────── */
+@media (max-width: 1024px) {
+    #map {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1000px) {
+    .info-card {
+        width: 100%;
+        max-width: 460px;
+    }
+}
+
+@media (max-width: 700px) {
+    .card-modal-inner {
+        flex-direction: column;
+    }
+
+    .modal-img {
+        width: 100%;
+        max-width: none;
+    }
+
+    .modal-content {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .cards-wrapper {
+        gap: 10px;
+    }
+
+    .info-card {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .info-card .card-img-top {
+        width: 100%;
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    #map {
+        --mm-size: 220px;
+        bottom: 12px;
+        right: 12px;
+    }
+
+    .search-container {
+        max-width: 92%;
+        margin: 0 auto 12px;
+    }
+
+    .site-header {
+        padding: 6px 10px;
+    }
+
+    .site-header .logo,
+    .site-header .navbar-brand img {
+        max-height: 32px;
+        max-width: 160px;
+    }
+
+    body {
+        padding-top: 56px;
+    }
+}
