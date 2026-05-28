@@ -8,6 +8,7 @@
 
 if (!isset($conn)) {
     include_once '../connessione/db.php';
+	$conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
 }
 
 $events = [];
@@ -99,7 +100,7 @@ if (isset($conn) && $conn instanceof mysqli) {
                 NULL              AS school_name,
                 NULL              AS distanza_km
             FROM Eventi e
-			INNER JOIN e.id_foto=f.ID_foto
+			INNER JOIN Foto f ON e.id_foto=f.ID_foto
             WHERE visibile = 1
             " . ($filtro_data ? "AND DATE(ora_inizio) = ? " : "") . "
             ORDER BY ora_inizio DESC
