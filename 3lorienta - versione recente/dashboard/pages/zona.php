@@ -114,12 +114,12 @@ $zone = leggiZone($conn);
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
                                         <a href="index.php?page=zona&modifica=<?= $id ?>"
-                                           class="btn btn-outline-primary btn-sm" title="Modifica">
-                                            <i class="bi bi-pencil-fill me-1"></i>Modifica
+                                           class="btn btn-sm btn-outline-primary" title="Modifica">
+                                            <i class="bi bi-pencil-fill"></i>
                                         </a>
-                                        <button class="btn btn-outline-danger btn-sm" title="Elimina"
+                                        <button class="btn btn-sm btn-outline-danger" title="Elimina"
                                                 onclick="apriModalElimina(<?= $id ?>, '<?= $nomeJs ?>')">
-                                            <i class="bi bi-trash-fill me-1"></i>Elimina
+                                            <i class="bi bi-trash-fill"></i>
                                         </button>
                                     </div>
                                 </td>
