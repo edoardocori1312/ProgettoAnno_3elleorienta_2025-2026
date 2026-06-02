@@ -113,8 +113,9 @@ function eliminaProgetto(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('UPDATE Progetti SET data_eliminazione = CURDATE() WHERE ID_progetto = ? AND data_eliminazione IS NULL');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Progetto eliminato.']
         : ['tipo' => 'errore',   'msg' => 'Progetto non trovato.'];
 }
@@ -123,8 +124,9 @@ function ripristinaProgetto(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('UPDATE Progetti SET data_eliminazione = NULL WHERE ID_progetto = ?');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Progetto ripristinato.']
         : ['tipo' => 'errore',   'msg' => 'Progetto non trovato.'];
 }

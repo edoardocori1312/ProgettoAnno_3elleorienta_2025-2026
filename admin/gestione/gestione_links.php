@@ -115,8 +115,9 @@ function eliminaLink(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('UPDATE Links SET data_eliminazione = CURDATE() WHERE ID_link = ? AND data_eliminazione IS NULL');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Link eliminato.']
         : ['tipo' => 'errore',   'msg' => 'Link non trovato.'];
 }
@@ -125,8 +126,9 @@ function ripristinaLink(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('UPDATE Links SET data_eliminazione = NULL WHERE ID_link = ?');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Link ripristinato.']
         : ['tipo' => 'errore',   'msg' => 'Link non trovato.'];
 }

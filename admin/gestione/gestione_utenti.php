@@ -122,8 +122,9 @@ function eliminaUtente(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('DELETE FROM Utenti WHERE ID_utente = ?');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Utente eliminato.']
         : ['tipo' => 'errore',   'msg' => 'Utente non trovato.'];
 }

@@ -237,9 +237,10 @@ function eliminaScuola(mysqli $conn, string $cod): array {
     $stmt = $conn->prepare('DELETE FROM Scuole WHERE COD_meccanografico = ?');
     $stmt->bind_param('s', $cod);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
 
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Scuola eliminata.']
         : ['tipo' => 'errore',   'msg' => 'Scuola non trovata.'];
 }

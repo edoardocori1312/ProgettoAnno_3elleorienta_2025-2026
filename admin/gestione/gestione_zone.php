@@ -53,8 +53,9 @@ function aggiornaZona(mysqli $conn, int $id, string $nome): array {
     $stmt = $conn->prepare('UPDATE Zone SET nome = ? WHERE ID_zona = ?');
     $stmt->bind_param('si', $nome, $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Zona modificata con successo']
         : ['tipo' => 'errore',   'msg' => 'Nessuna modifica apportata'];
 }
@@ -71,8 +72,9 @@ function rimuoviZona(mysqli $conn, int $idZona): array {
     $stmt = $conn->prepare('DELETE FROM Zone WHERE ID_zona = ?');
     $stmt->bind_param('i', $idZona);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Zona eliminata con successo']
         : ['tipo' => 'errore',   'msg' => 'Zona non trovata'];
 }

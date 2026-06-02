@@ -244,8 +244,9 @@ function eliminaEvento(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('UPDATE Eventi SET data_eliminazione = NOW() WHERE ID_evento = ? AND data_eliminazione IS NULL');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Evento eliminato.']
         : ['tipo' => 'errore',   'msg' => 'Evento non trovato.'];
 }
@@ -254,8 +255,9 @@ function ripristinaEvento(mysqli $conn, int $id): array {
     $stmt = $conn->prepare('UPDATE Eventi SET data_eliminazione = NULL WHERE ID_evento = ?');
     $stmt->bind_param('i', $id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
-    return $conn->affected_rows > 0
+    return $affected > 0
         ? ['tipo' => 'successo', 'msg' => 'Evento ripristinato.']
         : ['tipo' => 'errore',   'msg' => 'Evento non trovato.'];
 }
