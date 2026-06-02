@@ -4,7 +4,7 @@ require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
 $prj = $conn->query(
-    'SELECT f.path_foto FROM Progetti p
+    'SELECT p.nome, f.path_foto FROM Progetti p
      LEFT JOIN Foto f ON p.id_foto = f.ID_foto
      WHERE p.data_eliminazione IS NULL AND f.path_foto IS NOT NULL
      ORDER BY p.n_ordine ASC LIMIT 1'
@@ -59,7 +59,7 @@ render_navbar_pubblica('index.php');
       <?php endif; ?>
     </div>
     <div class="progetto-text">
-      <div class="progetto-title">SVELATI</div><br>
+      <div class="progetto-title"><?= htmlspecialchars(strtoupper($prj['nome'] ?? 'SVELATI')) ?></div><br>
       <div class="progetto-subtitle">Piattaforma 3elleorienta</div>
       <div class="progetto-buttons">
         <a href="orientati.php" class="btn-orientati">Orientati</a>
