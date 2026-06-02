@@ -126,23 +126,17 @@ function creaScuola(mysqli $conn, array $dati, array $file): array {
     if ($cod === '' || $nome === '' || $desc === '' || $via === '' || $civ <= 0 || $citta <= 0) {
         return ['tipo' => 'errore', 'msg' => 'Tutti i campi obbligatori devono essere compilati.'];
     }
-
-    // Geocoding fallback
-    if ($lat == 0 && $lng == 0) {
-        $stmtC = $conn->prepare('SELECT nome FROM Citta WHERE ID_citta = ?');
-        $stmtC->bind_param('i', $citta);
-        $stmtC->execute();
-        $nomeCitta = ($stmtC->get_result()->fetch_assoc())['nome'] ?? '';
-        $stmtC->close();
-        $geo = geocodifica($via, $civ, $nomeCitta);
-        $lat = $geo['lat'];
-        $lng = $geo['lng'];
+    if ($sito !== '' && !url_http_valido($sito)) {
+        return ['tipo' => 'errore', 'msg' => 'Il sito web deve iniziare con http:// o https://.'];
     }
 
-    // Upload foto
+    $geo = geocodifica_se_mancante($conn, $lat, $lng, $via, $civ, $citta);
+    $lat = $geo['lat'];
+    $lng = $geo['lng'];
+
+    // Upload foto (opzionale)
     $idFoto = null;
-    $fotoPresente = isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && $file['size'] > 0;
-    if ($fotoPresente) {
+    if (foto_presente($file)) {
         try {
             $idFoto = uploadFoto($conn, $file, $nome);
         } catch (Exception $e) {
@@ -150,21 +144,28 @@ function creaScuola(mysqli $conn, array $dati, array $file): array {
         }
     }
 
-    $stmt = $conn->prepare(
-        'INSERT INTO Scuole (COD_meccanografico, nome, descrizione, sito, via, n_civico, id_citta, latitudine, longitudine, id_foto)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    );
-    $stmt->bind_param('sssssiiddi', $cod, $nome, $desc, $sito, $via, $civ, $citta, $lat, $lng, $idFoto);
-    if (!$stmt->execute()) {
+    // INSERT scuola + associazioni in transazione: se qualcosa fallisce, rollback
+    // completo e pulizia della foto appena caricata (niente orfani).
+    try {
+        $conn->begin_transaction();
+        $stmt = $conn->prepare(
+            'INSERT INTO Scuole (COD_meccanografico, nome, descrizione, sito, via, n_civico, id_citta, latitudine, longitudine, id_foto)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->bind_param('sssssiiddi', $cod, $nome, $desc, $sito, $via, $civ, $citta, $lat, $lng, $idFoto);
+        $stmt->execute();
         $stmt->close();
+
+        _salvaAmbitiScuola($conn, $cod, $ambiti);
+        _salvaIndirizziScuola($conn, $cod, $indirizzi);
+        $conn->commit();
+    } catch (mysqli_sql_exception $e) {
+        $conn->rollback();
+        pulisci_foto($conn, $idFoto);
         return ['tipo' => 'errore', 'msg' => 'Errore nel salvataggio della scuola (il codice esiste già?).'];
     }
-    $stmt->close();
 
-    _salvaAmbitiScuola($conn, $cod, $ambiti);
-    _salvaIndirizziScuola($conn, $cod, $indirizzi);
-
-    return ['tipo' => 'successo', 'msg' => 'Scuola "' . htmlspecialchars($nome) . '" aggiunta con successo.'];
+    return ['tipo' => 'successo', 'msg' => 'Scuola "' . $nome . '" aggiunta con successo.'];
 }
 
 function aggiornaScuola(mysqli $conn, string $cod, array $dati, array $file): array {
@@ -182,21 +183,22 @@ function aggiornaScuola(mysqli $conn, string $cod, array $dati, array $file): ar
     if ($nome === '' || $desc === '' || $via === '' || $civ <= 0 || $citta <= 0) {
         return ['tipo' => 'errore', 'msg' => 'Tutti i campi obbligatori devono essere compilati.'];
     }
-
-    if ($lat == 0 && $lng == 0) {
-        $stmtC = $conn->prepare('SELECT nome FROM Citta WHERE ID_citta = ?');
-        $stmtC->bind_param('i', $citta);
-        $stmtC->execute();
-        $nomeCitta = ($stmtC->get_result()->fetch_assoc())['nome'] ?? '';
-        $stmtC->close();
-        $geo = geocodifica($via, $civ, $nomeCitta);
-        $lat = $geo['lat'];
-        $lng = $geo['lng'];
+    if ($sito !== '' && !url_http_valido($sito)) {
+        return ['tipo' => 'errore', 'msg' => 'Il sito web deve iniziare con http:// o https://.'];
     }
 
-    // Nuova foto
-    $fotoPresente = isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && $file['size'] > 0;
-    if ($fotoPresente) {
+    $geo = geocodifica_se_mancante($conn, $lat, $lng, $via, $civ, $citta);
+    $lat = $geo['lat'];
+    $lng = $geo['lng'];
+
+    // Nuova foto (opzionale): carica, ri-punta la scuola e memorizza la vecchia per pulirla dopo il commit.
+    $vecchioIdFoto = null;
+    if (foto_presente($file)) {
+        $stmtOld = $conn->prepare('SELECT id_foto FROM Scuole WHERE COD_meccanografico = ?');
+        $stmtOld->bind_param('s', $cod);
+        $stmtOld->execute();
+        $vecchioIdFoto = ($stmtOld->get_result()->fetch_assoc())['id_foto'] ?? null;
+        $stmtOld->close();
         try {
             $idFoto = uploadFoto($conn, $file, $nome);
             assocScuolaFoto($conn, $idFoto, $cod);
@@ -205,44 +207,89 @@ function aggiornaScuola(mysqli $conn, string $cod, array $dati, array $file): ar
         }
     }
 
-    $stmt = $conn->prepare(
-        'UPDATE Scuole SET nome=?, descrizione=?, sito=?, via=?, n_civico=?, id_citta=?, latitudine=?, longitudine=?
-         WHERE COD_meccanografico=?'
-    );
-    $stmt->bind_param('ssssiidds', $nome, $desc, $sito, $via, $civ, $citta, $lat, $lng, $cod);
-    $stmt->execute();
-    $stmt->close();
+    try {
+        $conn->begin_transaction();
+        $stmt = $conn->prepare(
+            'UPDATE Scuole SET nome=?, descrizione=?, sito=?, via=?, n_civico=?, id_citta=?, latitudine=?, longitudine=?
+             WHERE COD_meccanografico=?'
+        );
+        $stmt->bind_param('ssssiidds', $nome, $desc, $sito, $via, $civ, $citta, $lat, $lng, $cod);
+        $stmt->execute();
+        $stmt->close();
 
-    _salvaAmbitiScuola($conn, $cod, $ambiti);
-    _salvaIndirizziScuola($conn, $cod, $indirizzi);
+        _salvaAmbitiScuola($conn, $cod, $ambiti);
+        _salvaIndirizziScuola($conn, $cod, $indirizzi);
+        $conn->commit();
+    } catch (mysqli_sql_exception $e) {
+        $conn->rollback();
+        return ['tipo' => 'errore', 'msg' => "Errore nell'aggiornamento della scuola."];
+    }
+
+    // Pulisci la vecchia foto (soft-delete + unlink) solo dopo il commit.
+    if ($vecchioIdFoto) {
+        delFoto($conn, (int)$vecchioIdFoto);
+    }
 
     return ['tipo' => 'successo', 'msg' => 'Scuola aggiornata con successo.'];
 }
 
 function eliminaScuola(mysqli $conn, string $cod): array {
-    // Annulla FK in eventi
-    $stmt = $conn->prepare('UPDATE Eventi SET cod_scuola = NULL WHERE cod_scuola = ?');
+    // Blocca se ci sono utenti collegati: la FK fk_UtentiScuola è RESTRICT e
+    // scollegarli (cod_scuola=NULL) darebbe loro visibilità su tutti gli eventi.
+    $stmt = $conn->prepare('SELECT COUNT(*) FROM Utenti WHERE cod_scuola = ?');
     $stmt->bind_param('s', $cod);
     $stmt->execute();
+    [$nUtenti] = $stmt->get_result()->fetch_row();
     $stmt->close();
-
-    // Rimuovi associazioni
-    foreach (['Scuole_Ambiti', 'Scuole_Indirizzi'] as $tabella) {
-        $stmt = $conn->prepare("DELETE FROM $tabella WHERE cod_scuola = ?");
-        $stmt->bind_param('s', $cod);
-        $stmt->execute();
-        $stmt->close();
+    if ($nUtenti > 0) {
+        return ['tipo' => 'errore', 'msg' => 'Impossibile eliminare: ci sono utenti collegati a questa scuola. Riassegnali o eliminali prima.'];
     }
 
-    $stmt = $conn->prepare('DELETE FROM Scuole WHERE COD_meccanografico = ?');
+    // Blocca se ci sono eventi collegati (anche soft-deleted): annullarne il
+    // cod_scuola violerebbe il CHECK degli eventi scolastici, e la FK lo impedisce.
+    $stmt = $conn->prepare('SELECT COUNT(*) FROM Eventi WHERE cod_scuola = ?');
     $stmt->bind_param('s', $cod);
     $stmt->execute();
-    $affected = $stmt->affected_rows;
+    [$nEventi] = $stmt->get_result()->fetch_row();
+    $stmt->close();
+    if ($nEventi > 0) {
+        return ['tipo' => 'errore', 'msg' => 'Impossibile eliminare: ci sono eventi collegati a questa scuola. Eliminali prima.'];
+    }
+
+    // Recupera la foto per pulirla dopo la cancellazione.
+    $stmt = $conn->prepare('SELECT id_foto FROM Scuole WHERE COD_meccanografico = ?');
+    $stmt->bind_param('s', $cod);
+    $stmt->execute();
+    $idFoto = ($stmt->get_result()->fetch_assoc())['id_foto'] ?? null;
     $stmt->close();
 
-    return $affected > 0
-        ? ['tipo' => 'successo', 'msg' => 'Scuola eliminata.']
-        : ['tipo' => 'errore',   'msg' => 'Scuola non trovata.'];
+    try {
+        $conn->begin_transaction();
+        foreach (['Scuole_Ambiti', 'Scuole_Indirizzi'] as $tabella) {
+            $stmt = $conn->prepare("DELETE FROM $tabella WHERE cod_scuola = ?");
+            $stmt->bind_param('s', $cod);
+            $stmt->execute();
+            $stmt->close();
+        }
+        $stmt = $conn->prepare('DELETE FROM Scuole WHERE COD_meccanografico = ?');
+        $stmt->bind_param('s', $cod);
+        $stmt->execute();
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+        if ($affected === 0) {
+            $conn->rollback();
+            return ['tipo' => 'errore', 'msg' => 'Scuola non trovata.'];
+        }
+        $conn->commit();
+    } catch (mysqli_sql_exception $e) {
+        $conn->rollback();
+        return ['tipo' => 'errore', 'msg' => "Errore durante l'eliminazione della scuola."];
+    }
+
+    if ($idFoto) {
+        delFoto($conn, (int)$idFoto);
+    }
+    return ['tipo' => 'successo', 'msg' => 'Scuola eliminata.'];
 }
 
 // Sostituisce tutti gli ambiti associati alla scuola

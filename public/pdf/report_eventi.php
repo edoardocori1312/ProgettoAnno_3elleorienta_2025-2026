@@ -7,9 +7,11 @@ use Dompdf\Options;
 
 $conn = db();
 
-// Fetch all visible events with school and study-program data
-// GROUP_CONCAT aggregates study programs per school (mirrors MongoDB school.study_address[])
-$rows = $conn->query(
+// Eventi scolastici visibili, con la scuola e i suoi indirizzi di studio.
+// GROUP_CONCAT raggruppa gli indirizzi di studio della scuola (ordinati per n_ordine).
+// Filtra solo gli eventi scolastici (cod_scuola valorizzato): il report è
+// "presso gli istituti superiori", quindi gli eventi territoriali sono esclusi.
+$rows = query_all($conn,
     'SELECT e.ID_evento, e.titolo, e.ora_inizio, e.ora_fine,
             s.COD_meccanografico AS cod_scuola, s.nome AS nome_scuola,
             s.via, s.n_civico, c.nome AS nome_citta,
@@ -19,20 +21,20 @@ $rows = $conn->query(
      LEFT JOIN Citta             c   ON s.id_citta       = c.ID_citta
      LEFT JOIN Scuole_Indirizzi si  ON si.cod_scuola    = s.COD_meccanografico
      LEFT JOIN Indirizzi_studio ist  ON ist.ID_indirizzo = si.id_indirizzo
-     WHERE  e.visibile = 1 AND e.data_eliminazione IS NULL
+     WHERE  e.visibile = 1 AND e.data_eliminazione IS NULL AND e.cod_scuola IS NOT NULL
      GROUP  BY e.ID_evento
      ORDER  BY s.nome ASC, e.ora_inizio ASC'
-)->fetch_all(MYSQLI_ASSOC);
+);
 
 $conn->close();
 
-// Group events by school (mirrors school.js: schoolEvents.map(school => {...}))
+// Raggruppa gli eventi per scuola.
 $scuole = [];
 foreach ($rows as $row) {
-    $cod = $row['cod_scuola'] ?? '__territoriale__';
+    $cod = $row['cod_scuola'];
     if (!isset($scuole[$cod])) {
         $scuole[$cod] = [
-            'nome'      => $row['nome_scuola'] ?? '',
+            'nome'      => $row['nome_scuola'],
             'indirizzi' => $row['indirizzi'] ? explode('§', $row['indirizzi']) : [],
             'eventi'    => [],
         ];
@@ -45,7 +47,8 @@ foreach ($rows as $row) {
     ];
 }
 
-// Anno scolastico logic (mirrors school.js line 102: today > 9 ? YYYY/YY+1 : YYYY-1/YY)
+// Etichetta anno scolastico: da ottobre in poi è anno corrente/successivo,
+// altrimenti precedente/corrente.
 $mese = (int) date('n');
 if ($mese > 9) {
     $annoScol = date('Y') . '/' . date('y', strtotime('+1 year'));
@@ -54,9 +57,9 @@ if ($mese > 9) {
 }
 
 $oggi     = date('d/m/Y');
-$filename = date('D') . '_' . date('d-m-Y') . '_Eventi.pdf';
+$filename = 'Eventi_' . date('d-m-Y') . '.pdf';
 
-// ── Build HTML (mirrors school.js lines 100–188 exactly) ─────────────────────
+// ── Costruzione HTML del report ──────────────────────────────────────────────
 
 $html  = '<div style="color:#153483; text-align:center; font-size:20pt; position:relative; min-height:50px; padding-top:5px;">';
 $html .= '<span style="position:absolute; top:0; left:20px; font-size:12pt;">'
@@ -87,7 +90,7 @@ $html .= '<tbody>';
 foreach ($scuole as $scuola) {
     $html .= '<tr style="border-bottom:thin dashed; border-color:red;">';
 
-    // Scuola — bg #153483 (mirrors school.js lines 131–139)
+    // Colonna Scuola
     $html .= '<td style="background-color:#153483; color:white; vertical-align:top;'
            . ' font-size:10pt; page-break-inside:avoid; page-break-after:auto; padding:5px 10px 5px 5px;">';
     $html .= '<div>';
@@ -98,7 +101,7 @@ foreach ($scuole as $scuola) {
     $html .= '</div>';
     $html .= '</td>';
 
-    // Data evento — bg #4A5799 (mirrors school.js lines 141–162)
+    // Colonna Data evento
     $html .= '<td style="background-color:#4A5799; color:white; vertical-align:top;'
            . ' font-size:10pt; page-break-inside:avoid; page-break-after:auto; padding:5px 10px 5px 5px;">';
     $html .= '<div><span>';
@@ -108,7 +111,7 @@ foreach ($scuole as $scuola) {
     $html .= '</span><br/></div>';
     $html .= '</td>';
 
-    // Ora evento — bg #797EB3 (mirrors school.js lines 164–172)
+    // Colonna Ora evento
     $html .= '<td style="background-color:#797EB3; color:white; vertical-align:top;'
            . ' font-size:10pt; page-break-inside:avoid; page-break-after:auto; padding:5px 10px 5px 5px;">';
     $html .= '<div><span>';
@@ -118,7 +121,7 @@ foreach ($scuole as $scuola) {
     $html .= '</span><br/></div>';
     $html .= '</td>';
 
-    // Tipo di incontro — bg #8F92C0 (mirrors school.js lines 173–182)
+    // Colonna Tipo di incontro
     $html .= '<td style="background-color:#8F92C0; color:white; vertical-align:top;'
            . ' font-size:10pt; page-break-inside:avoid; page-break-after:auto; padding:5px 10px 5px 5px;">';
     $html .= '<div><span>';
@@ -133,7 +136,7 @@ foreach ($scuole as $scuola) {
 
 $html .= '</tbody></table>';
 
-// ── Render PDF via Dompdf (mirrors html-pdf A3 landscape options) ─────────────
+// ── Render PDF con Dompdf (A3 orizzontale) ───────────────────────────────────
 
 $options = new Options();
 $options->set('isRemoteEnabled', false);

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
 
-$eventi = $conn->query(
+$eventi = query_all($conn,
     'SELECT e.ID_evento, e.titolo, e.descrizione_breve, e.target,
             e.ora_inizio, e.ora_fine, e.visibile, e.prenotabile,
             e.via_P, e.n_civico_P, e.latitudine, e.longitudine,
@@ -14,10 +14,10 @@ $eventi = $conn->query(
      FROM   Eventi e
      LEFT JOIN Scuole s ON e.cod_scuola = s.COD_meccanografico
      LEFT JOIN Citta  c ON e.id_citta   = c.ID_citta
-     LEFT JOIN Foto   f ON e.id_foto    = f.ID_foto
+     LEFT JOIN Foto   f ON e.id_foto    = f.ID_foto AND f.data_eliminazione IS NULL
      WHERE  e.visibile = 1 AND e.data_eliminazione IS NULL
      ORDER  BY e.ora_inizio ASC'
-)->fetch_all(MYSQLI_ASSOC);
+);
 
 $conn->close();
 
@@ -38,7 +38,7 @@ foreach ($eventi as $ev) {
 }
 uasort($eventiPerScuola, fn($a, $b) => strcmp($a['nome'], $b['nome']));
 
-$leafletCSS = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">';
+$leafletCSS = '<link rel="stylesheet" href="' . LEAFLET_CSS . '">';
 render_head_pubblica('Eventi', $leafletCSS);
 render_navbar_pubblica('eventi.php');
 ?>
@@ -110,7 +110,7 @@ render_navbar_pubblica('eventi.php');
 <?php render_footer(); ?>
 
 <?php if (!empty($eventiMappa)): ?>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="<?= LEAFLET_JS ?>"></script>
 <script>
 const mappa = L.map('mappa-eventi').setView([43.5, 13.0], 9);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -127,14 +127,20 @@ const eventiMappa = <?= json_encode(array_values(array_map(fn($e) => [
     'citta'  => $e['nome_citta'] ?? '',
 ], $eventiMappa))) ?>;
 
+// bindPopup inserisce la stringa come HTML (innerHTML): json_encode protegge il
+// contesto JS ma NON l'HTML, quindi va riescapato qui per evitare XSS stored.
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
+
 eventiMappa.forEach(ev => {
     if (!ev.lat || !ev.lng) return;
     L.marker([ev.lat, ev.lng])
         .addTo(mappa)
         .bindPopup(
-            '<strong>' + ev.titolo + '</strong><br>' +
-            ev.desc + '<br>' +
-            '<small>' + ev.inizio + ' · ' + ev.citta + '</small>'
+            '<strong>' + esc(ev.titolo) + '</strong><br>' +
+            esc(ev.desc) + '<br>' +
+            '<small>' + esc(ev.inizio) + ' · ' + esc(ev.citta) + '</small>'
         );
 });
 </script>

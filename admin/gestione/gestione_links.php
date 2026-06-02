@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../lib/foto.php';
+require_once __DIR__ . '/../../lib/crud.php';
 
 function leggiLinks(mysqli $conn, bool $includiEliminati = false): array {
     $where  = $includiEliminati ? '1=1' : 'l.data_eliminazione IS NULL';
@@ -7,7 +8,7 @@ function leggiLinks(mysqli $conn, bool $includiEliminati = false): array {
         "SELECT l.ID_link, l.titolo, l.descrizione, l.indirizzo, l.n_ordine, l.data_eliminazione,
                 f.path_foto
          FROM   Links l
-         LEFT JOIN Foto f ON l.id_foto = f.ID_foto
+         LEFT JOIN Foto f ON l.id_foto = f.ID_foto AND f.data_eliminazione IS NULL
          WHERE  $where
          ORDER  BY l.n_ordine ASC"
     );
@@ -21,7 +22,7 @@ function leggiLink(mysqli $conn, int $id): ?array {
     $stmt = $conn->prepare(
         'SELECT l.*, f.path_foto
          FROM   Links l
-         LEFT JOIN Foto f ON l.id_foto = f.ID_foto
+         LEFT JOIN Foto f ON l.id_foto = f.ID_foto AND f.data_eliminazione IS NULL
          WHERE  l.ID_link = ?'
     );
     $stmt->bind_param('i', $id);
@@ -45,19 +46,15 @@ function creaLink(mysqli $conn, array $dati, array $file): array {
     if ($titolo === '' || $desc === '' || $indirizzo === '' || $ordine <= 0) {
         return ['tipo' => 'errore', 'msg' => 'Tutti i campi obbligatori devono essere compilati.'];
     }
-
-    $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Links WHERE n_ordine = ?');
-    $stmtChk->bind_param('i', $ordine);
-    $stmtChk->execute();
-    [$dup] = $stmtChk->get_result()->fetch_row();
-    $stmtChk->close();
-    if ($dup > 0) {
+    if (!url_http_valido($indirizzo)) {
+        return ['tipo' => 'errore', 'msg' => "L'indirizzo deve iniziare con http:// o https://."];
+    }
+    if (ordine_in_uso($conn, 'Links', 'ID_link', $ordine)) {
         return ['tipo' => 'errore', 'msg' => "Il numero d'ordine $ordine è già in uso."];
     }
 
     $idFoto = null;
-    $fotoOk = isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && $file['size'] > 0;
-    if ($fotoOk) {
+    if (foto_presente($file)) {
         try {
             $idFoto = uploadFoto($conn, $file, $titolo);
         } catch (Exception $e) {
@@ -67,12 +64,15 @@ function creaLink(mysqli $conn, array $dati, array $file): array {
 
     $stmt = $conn->prepare('INSERT INTO Links (titolo, descrizione, indirizzo, n_ordine, id_foto) VALUES (?, ?, ?, ?, ?)');
     $stmt->bind_param('sssii', $titolo, $desc, $indirizzo, $ordine, $idFoto);
-    if (!$stmt->execute()) {
+    try {
+        $stmt->execute();
         $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        $stmt->close();
+        pulisci_foto($conn, $idFoto);
         return ['tipo' => 'errore', 'msg' => 'Errore nel salvataggio del link.'];
     }
-    $stmt->close();
-    return ['tipo' => 'successo', 'msg' => 'Link "' . htmlspecialchars($titolo) . '" aggiunto con successo.'];
+    return ['tipo' => 'successo', 'msg' => 'Link "' . $titolo . '" aggiunto con successo.'];
 }
 
 function aggiornaLink(mysqli $conn, int $id, array $dati, array $file): array {
@@ -84,23 +84,27 @@ function aggiornaLink(mysqli $conn, int $id, array $dati, array $file): array {
     if ($titolo === '' || $desc === '' || $indirizzo === '' || $ordine <= 0) {
         return ['tipo' => 'errore', 'msg' => 'Tutti i campi obbligatori devono essere compilati.'];
     }
-
-    $stmtChk = $conn->prepare('SELECT COUNT(*) FROM Links WHERE n_ordine = ? AND ID_link != ?');
-    $stmtChk->bind_param('ii', $ordine, $id);
-    $stmtChk->execute();
-    [$dup] = $stmtChk->get_result()->fetch_row();
-    $stmtChk->close();
-    if ($dup > 0) {
+    if (!url_http_valido($indirizzo)) {
+        return ['tipo' => 'errore', 'msg' => "L'indirizzo deve iniziare con http:// o https://."];
+    }
+    if (ordine_in_uso($conn, 'Links', 'ID_link', $ordine, $id)) {
         return ['tipo' => 'errore', 'msg' => "Il numero d'ordine $ordine è già in uso."];
     }
 
-    $fotoOk = isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && $file['size'] > 0;
-    if ($fotoOk) {
+    if (foto_presente($file)) {
+        $stmtOld = $conn->prepare('SELECT id_foto FROM Links WHERE ID_link = ?');
+        $stmtOld->bind_param('i', $id);
+        $stmtOld->execute();
+        $vecchioIdFoto = ($stmtOld->get_result()->fetch_assoc())['id_foto'] ?? null;
+        $stmtOld->close();
         try {
             $idFoto = uploadFoto($conn, $file, $titolo);
             assocLinkFoto($conn, $idFoto, $id);
         } catch (Exception $e) {
             return ['tipo' => 'errore', 'msg' => 'Foto: ' . $e->getMessage()];
+        }
+        if ($vecchioIdFoto) {
+            delFoto($conn, (int)$vecchioIdFoto);
         }
     }
 
@@ -112,23 +116,9 @@ function aggiornaLink(mysqli $conn, int $id, array $dati, array $file): array {
 }
 
 function eliminaLink(mysqli $conn, int $id): array {
-    $stmt = $conn->prepare('UPDATE Links SET data_eliminazione = CURDATE() WHERE ID_link = ? AND data_eliminazione IS NULL');
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $affected = $stmt->affected_rows;
-    $stmt->close();
-    return $affected > 0
-        ? ['tipo' => 'successo', 'msg' => 'Link eliminato.']
-        : ['tipo' => 'errore',   'msg' => 'Link non trovato.'];
+    return soft_delete($conn, 'Links', 'ID_link', $id, 'CURDATE()', 'Link');
 }
 
 function ripristinaLink(mysqli $conn, int $id): array {
-    $stmt = $conn->prepare('UPDATE Links SET data_eliminazione = NULL WHERE ID_link = ?');
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $affected = $stmt->affected_rows;
-    $stmt->close();
-    return $affected > 0
-        ? ['tipo' => 'successo', 'msg' => 'Link ripristinato.']
-        : ['tipo' => 'errore',   'msg' => 'Link non trovato.'];
+    return soft_restore($conn, 'Links', 'ID_link', $id, 'Link');
 }

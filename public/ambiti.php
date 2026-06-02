@@ -4,16 +4,15 @@ require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
 
-$ambiti = $conn->query(
+$ambiti = query_all($conn,
     'SELECT a.ID_ambito, a.nome, a.descrizione,
-            GROUP_CONCAT(s.nome ORDER BY s.nome SEPARATOR \'|||\') AS scuole_nomi,
-            GROUP_CONCAT(s.COD_meccanografico ORDER BY s.nome SEPARATOR \'|||\') AS scuole_cod
+            GROUP_CONCAT(s.nome ORDER BY s.nome SEPARATOR \'|||\') AS scuole_nomi
      FROM   Ambiti a
      LEFT JOIN Scuole_Ambiti sa ON a.ID_ambito = sa.id_ambito
      LEFT JOIN Scuole s ON sa.cod_scuola = s.COD_meccanografico
      GROUP  BY a.ID_ambito, a.nome, a.descrizione
      ORDER  BY a.nome ASC'
-)->fetch_all(MYSQLI_ASSOC);
+);
 
 $conn->close();
 

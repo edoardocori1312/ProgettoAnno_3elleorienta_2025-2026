@@ -4,13 +4,13 @@ require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
 
-$links = $conn->query(
+$links = query_all($conn,
     'SELECT l.ID_link, l.titolo, l.descrizione, l.indirizzo, f.path_foto
      FROM   Links l
-     LEFT JOIN Foto f ON l.id_foto = f.ID_foto
+     LEFT JOIN Foto f ON l.id_foto = f.ID_foto AND f.data_eliminazione IS NULL
      WHERE  l.data_eliminazione IS NULL
      ORDER  BY l.n_ordine ASC'
-)->fetch_all(MYSQLI_ASSOC);
+);
 
 $conn->close();
 
@@ -25,14 +25,19 @@ render_hero_banner('Link Utili', 'Risorse utili per l\'orientamento');
         <p class="text-muted">Nessun link presente.</p>
         <?php else: ?>
         <div class="row row-cols-1 row-cols-md-3 g-4 align-items-start">
-            <?php foreach ($links as $i => $l): ?>
+            <?php foreach ($links as $i => $l): $linkValido = url_http_valido($l['indirizzo']); ?>
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <?php if ($l['path_foto']): ?>
+                    <?php if ($linkValido): ?>
                     <a href="<?= htmlspecialchars($l['indirizzo']) ?>" target="_blank" rel="noopener">
                         <img src="../<?= htmlspecialchars($l['path_foto']) ?>"
                              class="card-img-top" alt="<?= htmlspecialchars($l['titolo']) ?>">
                     </a>
+                    <?php else: ?>
+                    <img src="../<?= htmlspecialchars($l['path_foto']) ?>"
+                         class="card-img-top" alt="<?= htmlspecialchars($l['titolo']) ?>">
+                    <?php endif; ?>
                     <?php endif; ?>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title mb-2"><?= htmlspecialchars($l['titolo']) ?></h5>
@@ -46,8 +51,12 @@ render_hero_banner('Link Utili', 'Risorse utili per l\'orientamento');
                         <div class="collapse" id="desc-<?= $i ?>">
                             <p class="card-text mb-2"><?= htmlspecialchars($l['descrizione']) ?></p>
                         </div>
+                        <?php if ($linkValido): ?>
                         <a href="<?= htmlspecialchars($l['indirizzo']) ?>" target="_blank" rel="noopener"
                            class="btn btn-primary w-100 mt-auto">Vai al link</a>
+                        <?php else: ?>
+                        <span class="btn btn-secondary disabled w-100 mt-auto">Link non disponibile</span>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -4,13 +4,13 @@ require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
 
-$progetti = $conn->query(
+$progetti = query_all($conn,
     'SELECT p.ID_progetto, p.titolo, p.descrizione, f.path_foto
      FROM   Progetti p
-     LEFT JOIN Foto f ON p.id_foto = f.ID_foto
+     LEFT JOIN Foto f ON p.id_foto = f.ID_foto AND f.data_eliminazione IS NULL
      WHERE  p.data_eliminazione IS NULL
      ORDER  BY p.n_ordine ASC'
-)->fetch_all(MYSQLI_ASSOC);
+);
 
 $conn->close();
 

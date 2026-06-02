@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../lib/geo.php';
 require_once __DIR__ . '/../../lib/foto.php';
+require_once __DIR__ . '/../../lib/crud.php';
 
 function leggiEventi(mysqli $conn, bool $isAdmin, ?string $codScuola, bool $includiEliminati = false): array {
     $where  = $includiEliminati ? ['1=1'] : ['e.data_eliminazione IS NULL'];
@@ -21,7 +22,7 @@ function leggiEventi(mysqli $conn, bool $isAdmin, ?string $codScuola, bool $incl
             FROM   Eventi e
             LEFT JOIN Scuole s ON e.cod_scuola = s.COD_meccanografico
             LEFT JOIN Citta  c ON e.id_citta   = c.ID_citta
-            LEFT JOIN Foto   f ON e.id_foto    = f.ID_foto
+            LEFT JOIN Foto   f ON e.id_foto    = f.ID_foto AND f.data_eliminazione IS NULL
             WHERE  ' . implode(' AND ', $where) . '
             ORDER  BY e.ora_inizio DESC';
 
@@ -79,6 +80,9 @@ function creaEvento(mysqli $conn, array $dati, array $file, bool $isAdmin, ?stri
     $desc      = trim($dati['descrizione']       ?? '');
     $descBreve = trim($dati['descrizione_breve'] ?? '');
     $target    = $dati['target']                 ?? '';
+    // Sicurezza: un utente SCOLASTICO non può forgiare target=TERRITORIALE (il
+    // campo è solo client-side). Lo forziamo lato server prima di ogni branch.
+    if (!$isAdmin) { $target = 'SCOLASTICO'; }
     $oraInizio = str_replace('T', ' ', trim($dati['ora_inizio'] ?? ''));
     $oraFine   = str_replace('T', ' ', trim($dati['ora_fine']   ?? ''));
     $visibile  = isset($dati['visibile'])    ? 1 : 0;
@@ -105,20 +109,12 @@ function creaEvento(mysqli $conn, array $dati, array $file, bool $isAdmin, ?stri
         if ($via === '' || $civico <= 0 || $citta <= 0) {
             return ['tipo' => 'errore', 'msg' => 'Via, civico e città sono obbligatori per eventi territoriali.'];
         }
-        if ($lat == 0 && $lng == 0) {
-            $stmtC = $conn->prepare('SELECT nome FROM Citta WHERE ID_citta = ?');
-            $stmtC->bind_param('i', $citta);
-            $stmtC->execute();
-            $nomeCitta = ($stmtC->get_result()->fetch_assoc())['nome'] ?? '';
-            $stmtC->close();
-            $geo = geocodifica($via, $civico, $nomeCitta);
-            $lat = $geo['lat'];
-            $lng = $geo['lng'];
-        }
+        $geo = geocodifica_se_mancante($conn, $lat, $lng, $via, $civico, $citta);
+        $lat = $geo['lat'];
+        $lng = $geo['lng'];
     }
 
-    $fotoOk = isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && $file['size'] > 0;
-    if (!$fotoOk) {
+    if (!foto_presente($file)) {
         return ['tipo' => 'errore', 'msg' => 'La foto è obbligatoria per un nuovo evento.'];
     }
     try {
@@ -146,12 +142,15 @@ function creaEvento(mysqli $conn, array $dati, array $file, bool $isAdmin, ?stri
                           $via, $civico, $citta, $lat, $lng, $idFoto);
     }
 
-    if (!$stmt->execute()) {
+    try {
+        $stmt->execute();
         $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        $stmt->close();
+        pulisci_foto($conn, $idFoto); // niente foto orfana se l'INSERT fallisce
         return ['tipo' => 'errore', 'msg' => "Errore nel salvataggio dell'evento."];
     }
-    $stmt->close();
-    return ['tipo' => 'successo', 'msg' => 'Evento "' . htmlspecialchars($titolo) . '" creato con successo.'];
+    return ['tipo' => 'successo', 'msg' => 'Evento "' . $titolo . '" creato con successo.'];
 }
 
 function aggiornaEvento(mysqli $conn, int $id, array $dati, array $file, bool $isAdmin, ?string $codScuola): array {
@@ -165,6 +164,9 @@ function aggiornaEvento(mysqli $conn, int $id, array $dati, array $file, bool $i
     $desc      = trim($dati['descrizione']       ?? '');
     $descBreve = trim($dati['descrizione_breve'] ?? '');
     $target    = $dati['target']                 ?? '';
+    // Sicurezza: un utente SCOLASTICO non può forgiare target=TERRITORIALE (il
+    // campo è solo client-side). Lo forziamo lato server prima di ogni branch.
+    if (!$isAdmin) { $target = 'SCOLASTICO'; }
     $oraInizio = str_replace('T', ' ', trim($dati['ora_inizio'] ?? ''));
     $oraFine   = str_replace('T', ' ', trim($dati['ora_fine']   ?? ''));
     $visibile  = isset($dati['visibile'])    ? 1 : 0;
@@ -191,25 +193,21 @@ function aggiornaEvento(mysqli $conn, int $id, array $dati, array $file, bool $i
         if ($via === '' || $civico <= 0 || $citta <= 0) {
             return ['tipo' => 'errore', 'msg' => 'Via, civico e città sono obbligatori per eventi territoriali.'];
         }
-        if ($lat == 0 && $lng == 0) {
-            $stmtC = $conn->prepare('SELECT nome FROM Citta WHERE ID_citta = ?');
-            $stmtC->bind_param('i', $citta);
-            $stmtC->execute();
-            $nomeCitta = ($stmtC->get_result()->fetch_assoc())['nome'] ?? '';
-            $stmtC->close();
-            $geo = geocodifica($via, $civico, $nomeCitta);
-            $lat = $geo['lat'];
-            $lng = $geo['lng'];
-        }
+        $geo = geocodifica_se_mancante($conn, $lat, $lng, $via, $civico, $citta);
+        $lat = $geo['lat'];
+        $lng = $geo['lng'];
     }
 
-    $fotoOk = isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && $file['size'] > 0;
-    if ($fotoOk) {
+    if (foto_presente($file)) {
+        $vecchioIdFoto = $vecchio['id_foto'] ?? null;
         try {
             $idFoto = uploadFoto($conn, $file, $titolo);
             assocEventiFoto($conn, $idFoto, $id);
         } catch (Exception $e) {
             return ['tipo' => 'errore', 'msg' => 'Foto: ' . $e->getMessage()];
+        }
+        if ($vecchioIdFoto) {
+            delFoto($conn, (int)$vecchioIdFoto); // rimuove la vecchia foto sostituita
         }
     }
 
@@ -241,23 +239,9 @@ function aggiornaEvento(mysqli $conn, int $id, array $dati, array $file, bool $i
 }
 
 function eliminaEvento(mysqli $conn, int $id): array {
-    $stmt = $conn->prepare('UPDATE Eventi SET data_eliminazione = NOW() WHERE ID_evento = ? AND data_eliminazione IS NULL');
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $affected = $stmt->affected_rows;
-    $stmt->close();
-    return $affected > 0
-        ? ['tipo' => 'successo', 'msg' => 'Evento eliminato.']
-        : ['tipo' => 'errore',   'msg' => 'Evento non trovato.'];
+    return soft_delete($conn, 'Eventi', 'ID_evento', $id, 'NOW()', 'Evento');
 }
 
 function ripristinaEvento(mysqli $conn, int $id): array {
-    $stmt = $conn->prepare('UPDATE Eventi SET data_eliminazione = NULL WHERE ID_evento = ?');
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $affected = $stmt->affected_rows;
-    $stmt->close();
-    return $affected > 0
-        ? ['tipo' => 'successo', 'msg' => 'Evento ripristinato.']
-        : ['tipo' => 'errore',   'msg' => 'Evento non trovato.'];
+    return soft_restore($conn, 'Eventi', 'ID_evento', $id, 'Evento');
 }

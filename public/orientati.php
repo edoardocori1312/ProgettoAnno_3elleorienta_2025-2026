@@ -4,8 +4,8 @@ require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
 
-$zone   = $conn->query('SELECT ID_zona, nome FROM Zone   ORDER BY nome ASC')->fetch_all(MYSQLI_ASSOC);
-$ambiti = $conn->query('SELECT ID_ambito, nome FROM Ambiti ORDER BY nome ASC')->fetch_all(MYSQLI_ASSOC);
+$zone   = query_all($conn, 'SELECT ID_zona, nome FROM Zone   ORDER BY nome ASC');
+$ambiti = query_all($conn, 'SELECT ID_ambito, nome FROM Ambiti ORDER BY nome ASC');
 
 $filtroNome   = trim($_GET['nome']   ?? '');
 $filtroZona   = (int)($_GET['zona']   ?? 0);
@@ -48,19 +48,24 @@ $sql = 'SELECT s.COD_meccanografico, s.nome, s.descrizione, s.sito, s.via, s.n_c
         GROUP  BY s.COD_meccanografico
         ORDER  BY s.nome ASC';
 
-if ($types === '') {
-    $scuole = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
-} else {
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    $scuole = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+try {
+    if ($types === '') {
+        $scuole = query_all($conn, $sql);
+    } else {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $scuole = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    }
+} catch (mysqli_sql_exception $e) {
+    error_log('orientati query failed: ' . $e->getMessage());
+    $scuole = [];
 }
 
 $conn->close();
 
-$leafletCSS = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">';
+$leafletCSS = '<link rel="stylesheet" href="' . LEAFLET_CSS . '">';
 render_head_pubblica('Orientati — Esplora le scuole', $leafletCSS);
 render_navbar_pubblica('orientati.php');
 render_hero_banner('Orientati', 'Esplora le scuole del territorio e trova il percorso giusto per te');
@@ -173,7 +178,7 @@ render_hero_banner('Orientati', 'Esplora le scuole del territorio e trova il per
                             <?php if ($s['latitudine'] && $s['longitudine']): ?>
                             <div id="mappa-sc-<?= $i ?>" style="height:180px;border-radius:8px;" class="mt-2"></div>
                             <?php endif; ?>
-                            <?php if ($s['sito']): ?>
+                            <?php if ($s['sito'] && url_http_valido($s['sito'])): ?>
                             <a href="<?= htmlspecialchars($s['sito']) ?>" target="_blank" rel="noopener"
                                class="btn btn-outline-primary btn-sm mt-2">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>Sito web
@@ -199,7 +204,7 @@ foreach ($scuole as $i => $s) {
 }
 if (!empty($mapData)):
 ?>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="<?= LEAFLET_JS ?>"></script>
 <script>
 const mappeScuole = <?= json_encode($mapData) ?>;
 const mappeInit   = {};

@@ -71,7 +71,7 @@ function creaUtente(mysqli $conn, array $dati): array {
         return ['tipo' => 'errore', 'msg' => 'Errore nel salvataggio.'];
     }
     $stmt->close();
-    return ['tipo' => 'successo', 'msg' => 'Utente "' . htmlspecialchars($username) . '" creato.'];
+    return ['tipo' => 'successo', 'msg' => 'Utente "' . $username . '" creato.'];
 }
 
 function aggiornaUtente(mysqli $conn, int $id, array $dati): array {
