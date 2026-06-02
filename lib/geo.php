@@ -23,3 +23,23 @@ function geocodifica(string $via, int $civico, string $citta): array {
     }
     return ['lat' => 0.0, 'lng' => 0.0];
 }
+
+/**
+ * Se le coordinate non sono state fornite (lat/lng == 0), risolve il nome della
+ * città dall'ID e tenta la geocodifica server-side. Altrimenti restituisce le
+ * coordinate ricevute invariate. Centralizza il blocco prima duplicato in
+ * crea/aggiorna di Eventi e Scuole.
+ *
+ * @return array ['lat' => float, 'lng' => float]
+ */
+function geocodifica_se_mancante(mysqli $conn, float $lat, float $lng, string $via, int $civico, int $idCitta): array {
+    if ($lat != 0.0 || $lng != 0.0) {
+        return ['lat' => $lat, 'lng' => $lng];
+    }
+    $stmtC = $conn->prepare('SELECT nome FROM Citta WHERE ID_citta = ?');
+    $stmtC->bind_param('i', $idCitta);
+    $stmtC->execute();
+    $nomeCitta = ($stmtC->get_result()->fetch_assoc())['nome'] ?? '';
+    $stmtC->close();
+    return geocodifica($via, $civico, $nomeCitta);
+}

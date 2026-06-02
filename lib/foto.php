@@ -35,7 +35,7 @@ function uploadFoto(mysqli $conn, array $file, string $prefisso = ''): int {
 
     $slug     = preg_replace('/[^a-z0-9]+/', '_', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $prefisso)));
     $slug     = trim($slug, '_') ?: 'foto';
-    $nome     = $slug . '_' . bin2hex(random_bytes(2)) . '.jpg';
+    $nome     = $slug . '_' . bin2hex(random_bytes(8)) . '.jpg';
     $percorso = UPLOADS_DIR . $nome;
     $pathDB   = 'uploads/' . $nome;
 
@@ -56,12 +56,54 @@ function uploadFoto(mysqli $conn, array $file, string $prefisso = ''): int {
     return $id;
 }
 
+// True se nel form è stato effettivamente caricato un file valido.
+function foto_presente(array $file): bool {
+    return isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && ($file['size'] ?? 0) > 0;
+}
+
+// Soft-delete della foto + rimozione del file fisico dal disco.
 function delFoto(mysqli $conn, int $id): void {
+    if ($id <= 0) return;
+
+    // Recupera il path per poter eliminare anche il file su disco.
+    $stmtSel = $conn->prepare('SELECT path_foto FROM Foto WHERE ID_foto = ?');
+    $stmtSel->bind_param('i', $id);
+    $stmtSel->execute();
+    $path = ($stmtSel->get_result()->fetch_assoc())['path_foto'] ?? null;
+    $stmtSel->close();
+
     $now  = (new DateTime('now', new DateTimeZone('Europe/Rome')))->format('Y-m-d H:i:s');
     $stmt = $conn->prepare('UPDATE Foto SET data_eliminazione = ? WHERE ID_foto = ?');
     $stmt->bind_param('si', $now, $id);
     $stmt->execute();
     $stmt->close();
+
+    if ($path) {
+        $file = UPLOADS_DIR . basename($path);
+        if (is_file($file)) @unlink($file);
+    }
+}
+
+// Rollback: la foto è stata caricata ma l'INSERT dell'entità padre è fallito.
+// Hard-delete della riga Foto + rimozione del file, così non restano orfani.
+function pulisci_foto(mysqli $conn, ?int $id): void {
+    if (!$id || $id <= 0) return;
+
+    $stmtSel = $conn->prepare('SELECT path_foto FROM Foto WHERE ID_foto = ?');
+    $stmtSel->bind_param('i', $id);
+    $stmtSel->execute();
+    $path = ($stmtSel->get_result()->fetch_assoc())['path_foto'] ?? null;
+    $stmtSel->close();
+
+    $stmt = $conn->prepare('DELETE FROM Foto WHERE ID_foto = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $stmt->close();
+
+    if ($path) {
+        $file = UPLOADS_DIR . basename($path);
+        if (is_file($file)) @unlink($file);
+    }
 }
 
 function assocScuolaFoto(mysqli $conn, int $idFoto, string $codScuola): void {

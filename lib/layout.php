@@ -4,6 +4,10 @@ const BS_CSS  = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap
 const BS_ICON = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';
 const BS_JS   = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
 
+// ── Costanti Leaflet CDN (versione unica per le pagine con mappa) ────────────
+const LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+const LEAFLET_JS  = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+
 // ────────────────────────────────────────────────────────────────────────────
 // SITO PUBBLICO
 // ────────────────────────────────────────────────────────────────────────────
@@ -168,15 +172,17 @@ function render_head_admin(string $titolo): void { ?>
 <?php }
 
 function render_sidebar_admin(string $attiva = ''): void {
-    $voceScuola = [
-        'scuole.php' => ['bi-backpack-fill', 'Scuole'],
-        'zone.php'   => ['bi-geo-fill',      'Zone'],
-    ];
-    $voceAvvenimenti = [
-        'eventi.php'   => ['bi-calendar-fill',  'Eventi'],
-        'progetti.php' => ['bi-lightbulb-fill', 'Progetti'],
-        'links.php'    => ['bi-link-45deg',     'Link Utili'],
-    ];
+    // Scuole ed Eventi sono visibili anche allo SCOLASTICO; Zone, Progetti e
+    // Link Utili sono solo ADMIN (i relativi controller usano richiedi_admin()).
+    $voceScuola = ['scuole.php' => ['bi-backpack-fill', 'Scuole']];
+    if (is_admin()) {
+        $voceScuola['zone.php'] = ['bi-geo-fill', 'Zone'];
+    }
+    $voceAvvenimenti = ['eventi.php' => ['bi-calendar-fill', 'Eventi']];
+    if (is_admin()) {
+        $voceAvvenimenti['progetti.php'] = ['bi-lightbulb-fill', 'Progetti'];
+        $voceAvvenimenti['links.php']    = ['bi-link-45deg',     'Link Utili'];
+    }
     $voceAltro = [
         'impostazioni.php' => ['bi-tools', 'Impostazioni'],
     ]; ?>
@@ -265,6 +271,62 @@ function chiudi_pagina(): void { ?>
 </body>
 </html>
 <?php }
+
+/**
+ * Modale di conferma eliminazione condivisa (prima duplicata in 6 pagine admin).
+ * Emette il markup Bootstrap + la funzione JS apriElimina(id, label).
+ *
+ * @param string $action       URL del form POST (es. 'eventi.php')
+ * @param string $campoHidden  nome del campo hidden con l'id (es. 'elimina_id', 'elimina_cod', 'id_zona')
+ * @param string $msgExtra     eventuale avviso aggiuntivo (es. cascade su scuole)
+ */
+function render_modal_elimina(string $action, string $campoHidden = 'elimina_id', string $msgExtra = ''): void {
+    $csrf = function_exists('csrf_token') ? csrf_token() : ''; ?>
+<div class="modal fade" id="modalElimina" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Conferma eliminazione
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <p id="modal-msg" class="mb-1" style="font-size:.9rem;"></p>
+                <?php if ($msgExtra !== ''): ?>
+                <p class="text-danger mb-0" style="font-size:.82rem;">
+                    <i class="bi bi-info-circle me-1"></i><?= htmlspecialchars($msgExtra) ?>
+                </p>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
+                <form method="POST" action="<?= htmlspecialchars($action) ?>" style="display:inline">
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>">
+                    <input type="hidden" name="<?= htmlspecialchars($campoHidden) ?>" id="modal-elimina-id" value="">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash-fill me-1"></i>Elimina
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function apriElimina(id, label) {
+    document.getElementById('modal-msg').textContent = 'Eliminare «' + label + '»?';
+    document.getElementById('modal-elimina-id').value = id;
+    new bootstrap.Modal(document.getElementById('modalElimina')).show();
+}
+</script>
+<?php }
+
+// True solo se l'URL ha schema http/https (blocca javascript:, data:, ecc.).
+// Usato sia per validare al salvataggio sia come guardia in output.
+function url_http_valido(string $url): bool {
+    $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+    return in_array($scheme, ['http', 'https'], true);
+}
 
 // Rende un alert flash Bootstrap se presente
 function render_flash(?array $flash): void {

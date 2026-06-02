@@ -3,7 +3,17 @@ require_once __DIR__ . '/../config/db.php';
 
 function avvia_sessione(): void {
     if (session_status() === PHP_SESSION_NONE) {
+        // Cookie di sessione hardened: HttpOnly (no accesso JS), SameSite=Lax (anti-CSRF),
+        // Secure solo se siamo in HTTPS (così non rompe il dev Docker su HTTP).
+        session_set_cookie_params([
+            'httponly' => true,
+            'samesite' => 'Lax',
+            'secure'   => !empty($_SERVER['HTTPS']),
+        ]);
         session_start();
+    }
+    if (empty($_SESSION['csrf'])) {
+        $_SESSION['csrf'] = bin2hex(random_bytes(32));
     }
 }
 
@@ -24,6 +34,8 @@ function prova_login(string $email, string $password): bool {
     if (!password_verify($password, $riga['hash_password'])) return false;
 
     avvia_sessione();
+    // Anti session-fixation: nuovo ID di sessione al cambio di privilegio (login).
+    session_regenerate_id(true);
     $_SESSION['uid']        = (int)$riga['ID_utente'];
     $_SESSION['username']   = $riga['username'];
     $_SESSION['ruolo']      = $riga['tipo'];
@@ -76,4 +88,22 @@ function prendi_flash(): ?array {
     $flash = $_SESSION['flash'];
     unset($_SESSION['flash']);
     return $flash;
+}
+
+// ── CSRF ─────────────────────────────────────────────────────────────────────
+// Restituisce il token di sessione, da inserire come campo hidden in ogni form POST.
+function csrf_token(): string {
+    avvia_sessione();
+    return $_SESSION['csrf'] ?? '';
+}
+
+// Verifica il token inviato nel POST; in caso di mismatch interrompe con 403.
+// Va chiamata in cima a ogni handler POST che modifica stato.
+function verifica_csrf(): void {
+    avvia_sessione();
+    $inviato = $_POST['csrf'] ?? '';
+    if (!is_string($inviato) || !hash_equals($_SESSION['csrf'] ?? '', $inviato)) {
+        http_response_code(403);
+        exit('Richiesta non valida (CSRF).');
+    }
 }
