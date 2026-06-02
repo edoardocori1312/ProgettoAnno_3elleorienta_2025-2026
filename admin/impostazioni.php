@@ -8,6 +8,7 @@ $conn = db();
 $uid  = $_SESSION['uid'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifica_csrf();
     $esito = cambiaPassword(
         $conn,
         $uid,
@@ -66,6 +67,7 @@ render_topbar_admin('Impostazioni');
         <div class="card-panel">
             <p class="section-title"><i class="bi bi-key-fill me-1"></i> Cambia password</p>
             <form method="POST" action="impostazioni.php">
+                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Password attuale *</label>

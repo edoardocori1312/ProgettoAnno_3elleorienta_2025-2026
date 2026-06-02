@@ -8,8 +8,10 @@ $conn = db();
 
 // PRG: gestisci POST e redirect
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifica_csrf();
     if (isset($_POST['inserisci'])) {
-        imposta_flash(...array_values(creaZona($conn, $_POST['zona'] ?? '')));
+        $esito = creaZona($conn, $_POST['nome'] ?? '');
+        imposta_flash($esito['tipo'], $esito['msg']);
         $conn->close();
         header('Location: zone.php');
         exit;
@@ -22,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     if (isset($_POST['id_zona'])) {
-        imposta_flash(...array_values(rimuoviZona($conn, (int)$_POST['id_zona'])));
+        $esito = eliminaZona($conn, (int)$_POST['id_zona']);
+        imposta_flash($esito['tipo'], $esito['msg']);
         $conn->close();
         header('Location: zone.php');
         exit;
@@ -40,35 +43,7 @@ render_topbar_admin('Zone');
 
 <?php render_flash($flash); ?>
 
-<!-- Modale conferma eliminazione -->
-<div class="modal fade" id="modalElimina" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Conferma eliminazione
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-2">
-                <p id="modal-elimina-msg" class="mb-1" style="font-size:.9rem;"></p>
-                <p class="text-danger mb-0" style="font-size:.82rem;">
-                    <i class="bi bi-info-circle me-1"></i>
-                    L'operazione non è reversibile se non ci sono città associate.
-                </p>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
-                <form id="form-elimina" method="POST" action="zone.php" style="display:inline">
-                    <input type="hidden" name="id_zona" id="modal-id-zona" value="">
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash-fill me-1"></i>Elimina
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<?php render_modal_elimina('zone.php', 'id_zona', "L'operazione non è reversibile se non ci sono città associate."); ?>
 
 <!-- Modale aggiungi zona -->
 <div class="modal fade" id="modalAggiungi" tabindex="-1" aria-hidden="true">
@@ -79,9 +54,10 @@ render_topbar_admin('Zone');
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="zone.php">
+                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <div class="modal-body pt-2">
-                    <label for="zona" class="form-label">Nome zona</label>
-                    <input type="text" id="zona" name="zona" class="form-control" required minlength="3">
+                    <label for="nome" class="form-label">Nome zona</label>
+                    <input type="text" id="nome" name="nome" class="form-control" required minlength="3">
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
@@ -103,6 +79,7 @@ render_topbar_admin('Zone');
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="zone.php">
+                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <input type="hidden" name="id" id="modal-modifica-id" value="">
                 <div class="modal-body pt-2">
                     <label for="modal-modifica-nome" class="form-label">Nome zona</label>
@@ -160,7 +137,7 @@ render_topbar_admin('Zone');
                                     <i class="bi bi-pencil-fill"></i>
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm"
-                                        onclick="apriModaleElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($row['nome']), ENT_QUOTES, 'UTF-8') ?>)">
+                                        onclick="apriElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($row['nome']), ENT_QUOTES, 'UTF-8') ?>)">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
                             </td>
@@ -179,11 +156,6 @@ function apriModaleModifica(id, nome) {
     document.getElementById('modal-modifica-id').value = id;
     document.getElementById('modal-modifica-nome').value = nome;
     new bootstrap.Modal(document.getElementById('modalModifica')).show();
-}
-function apriModaleElimina(id, nome) {
-    document.getElementById('modal-elimina-msg').textContent = 'Eliminare la zona "' + nome + '"?';
-    document.getElementById('modal-id-zona').value = id;
-    new bootstrap.Modal(document.getElementById('modalElimina')).show();
 }
 </script>
 

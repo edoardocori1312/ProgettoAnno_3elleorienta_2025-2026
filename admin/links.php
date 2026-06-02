@@ -7,14 +7,17 @@ richiedi_admin();
 $conn = db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifica_csrf();
     if (isset($_POST['elimina_id'])) {
-        imposta_flash(...array_values(eliminaLink($conn, (int)$_POST['elimina_id'])));
+        $esito = eliminaLink($conn, (int)$_POST['elimina_id']);
+        imposta_flash($esito['tipo'], $esito['msg']);
         $conn->close();
         header('Location: links.php');
         exit;
     }
     if (isset($_POST['ripristina_id'])) {
-        imposta_flash(...array_values(ripristinaLink($conn, (int)$_POST['ripristina_id'])));
+        $esito = ripristinaLink($conn, (int)$_POST['ripristina_id']);
+        imposta_flash($esito['tipo'], $esito['msg']);
         $conn->close();
         header('Location: links.php?tab=eliminati');
         exit;
@@ -33,31 +36,7 @@ render_topbar_admin('Link Utili');
 
 <?php render_flash($flash); ?>
 
-<!-- Modale conferma eliminazione -->
-<div class="modal fade" id="modalElimina" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Conferma eliminazione
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-2">
-                <p id="modal-msg" style="font-size:.9rem;"></p>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
-                <form method="POST" action="links.php" style="display:inline">
-                    <input type="hidden" name="elimina_id" id="modal-elimina-id" value="">
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash-fill me-1"></i>Elimina
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<?php render_modal_elimina('links.php', 'elimina_id'); ?>
 
 <div class="content-grid">
     <div class="grid-full">
@@ -107,13 +86,17 @@ render_topbar_admin('Link Utili');
                         <td><?= $l['n_ordine'] ?></td>
                         <td><?= htmlspecialchars($l['titolo']) ?></td>
                         <td>
+                            <?php if (url_http_valido($l['indirizzo'])): ?>
                             <a href="<?= htmlspecialchars($l['indirizzo']) ?>" target="_blank" rel="noopener"
                                class="text-decoration-none" style="font-size:.82rem;">
                                 <i class="bi bi-box-arrow-up-right me-1"></i><?= htmlspecialchars($l['indirizzo']) ?>
                             </a>
+                            <?php else: ?>
+                            <span class="text-muted" style="font-size:.82rem;"><?= htmlspecialchars($l['indirizzo']) ?></span>
+                            <?php endif; ?>
                         </td>
                         <?php if ($tab === 'eliminati'): ?>
-                        <td style="font-size:.8rem;"><?= $l['data_eliminazione'] ?? '' ?></td>
+                        <td style="font-size:.8rem;"><?= $l['data_eliminazione'] ? date('d/m/Y', strtotime($l['data_eliminazione'])) : '' ?></td>
                         <?php endif; ?>
                         <td class="text-center">
                             <?php if ($tab === 'attivi'): ?>
@@ -127,6 +110,7 @@ render_topbar_admin('Link Utili');
                             </button>
                             <?php else: ?>
                             <form method="POST" action="links.php" style="display:inline">
+                                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                                 <input type="hidden" name="ripristina_id" value="<?= $id ?>">
                                 <button type="submit" class="btn btn-outline-success btn-sm" title="Ripristina">
                                     <i class="bi bi-arrow-counterclockwise"></i>
@@ -144,13 +128,5 @@ render_topbar_admin('Link Utili');
         </div>
     </div>
 </div>
-
-<script>
-function apriElimina(id, titolo) {
-    document.getElementById('modal-msg').textContent = 'Eliminare il link "' + titolo + '"?';
-    document.getElementById('modal-elimina-id').value = id;
-    new bootstrap.Modal(document.getElementById('modalElimina')).show();
-}
-</script>
 
 <?php chiudi_pagina(); ?>

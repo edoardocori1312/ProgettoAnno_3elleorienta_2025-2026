@@ -29,6 +29,7 @@ if ($modoModifica && !$isAdmin && $codUtente !== $codModifica) {
 
 // POST: salva
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifica_csrf();
     $azione = $_POST['azione'] ?? '';
     $file   = $_FILES['foto'] ?? ['error' => UPLOAD_ERR_NO_FILE, 'size' => 0];
 
@@ -85,6 +86,7 @@ render_topbar_admin($titolo);
         <div class="card-panel">
 
             <form method="POST" action="scuola_form.php" enctype="multipart/form-data">
+                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <input type="hidden" name="azione" value="<?= $modoModifica ? 'aggiorna' : 'inserisci' ?>">
                 <?php if ($modoModifica): ?>
                 <input type="hidden" name="cod_meccanografico" value="<?= htmlspecialchars($scuola['COD_meccanografico']) ?>">

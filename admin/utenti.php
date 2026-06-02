@@ -7,7 +7,9 @@ richiedi_admin();
 $conn = db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['elimina_id'])) {
-    imposta_flash(...array_values(eliminaUtente($conn, (int)$_POST['elimina_id'])));
+    verifica_csrf();
+    $esito = eliminaUtente($conn, (int)$_POST['elimina_id']);
+    imposta_flash($esito['tipo'], $esito['msg']);
     $conn->close();
     header('Location: utenti.php');
     exit;
@@ -24,31 +26,7 @@ render_topbar_admin('Utenti');
 
 <?php render_flash($flash); ?>
 
-<!-- Modale conferma eliminazione -->
-<div class="modal fade" id="modalElimina" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Conferma eliminazione
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-2">
-                <p id="modal-msg" style="font-size:.9rem;"></p>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annulla</button>
-                <form method="POST" action="utenti.php" style="display:inline">
-                    <input type="hidden" name="elimina_id" id="modal-elimina-id" value="">
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash-fill me-1"></i>Elimina
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<?php render_modal_elimina('utenti.php', 'elimina_id', "L'operazione non è reversibile."); ?>
 
 <div class="content-grid">
     <div class="grid-full">
@@ -113,13 +91,5 @@ render_topbar_admin('Utenti');
         </div>
     </div>
 </div>
-
-<script>
-function apriElimina(id, username) {
-    document.getElementById('modal-msg').textContent = 'Eliminare l\'utente "' + username + '"? L\'operazione non è reversibile.';
-    document.getElementById('modal-elimina-id').value = id;
-    new bootstrap.Modal(document.getElementById('modalElimina')).show();
-}
-</script>
 
 <?php chiudi_pagina(); ?>

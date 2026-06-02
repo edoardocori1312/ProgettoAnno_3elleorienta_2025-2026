@@ -22,6 +22,7 @@ if ($modoModifica) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifica_csrf();
     $azione = $_POST['azione'] ?? '';
     if ($azione === 'inserisci') {
         $esito = creaUtente($conn, $_POST);
@@ -54,6 +55,7 @@ render_topbar_admin($titolo);
         <div class="card-panel">
 
             <form method="POST" action="utente_form.php">
+                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <input type="hidden" name="azione" value="<?= $modoModifica ? 'aggiorna' : 'inserisci' ?>">
                 <?php if ($modoModifica): ?>
                 <input type="hidden" name="id_utente" value="<?= $idModifica ?>">

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../lib/auth.php';
+require_once __DIR__ . '/../lib/layout.php';
 avvia_sessione();
 
 if (isset($_SESSION['uid'])) {
@@ -10,6 +11,7 @@ if (isset($_SESSION['uid'])) {
 $errore = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifica_csrf();
     $email    = trim($_POST['email']    ?? '');
     $password = trim($_POST['password'] ?? '');
 
@@ -29,8 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Admin Svelati</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?= BS_CSS ?>">
+    <link rel="stylesheet" href="<?= BS_ICON ?>">
     <link rel="stylesheet" href="assets/css/admin.css">
 </head>
 <body class="bg-light">
@@ -54,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="login.php">
+                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" id="email" name="email" class="form-control" required autofocus>
@@ -73,6 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= BS_JS ?>"></script>
 </body>
 </html>
