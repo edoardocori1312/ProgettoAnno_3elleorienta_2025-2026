@@ -3,12 +3,14 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../lib/layout.php';
 
 $conn = db();
-$prj = $conn->query(
-    'SELECT p.nome, f.path_foto FROM Progetti p
-     LEFT JOIN Foto f ON p.id_foto = f.ID_foto
+// NB: la colonna del nome progetto è `titolo` (non `nome`); l'alias mantiene
+// l'accesso $prj['nome'] più sotto. query_one() degrada a null senza 500.
+$prj = query_one($conn,
+    'SELECT p.titolo AS nome, f.path_foto FROM Progetti p
+     LEFT JOIN Foto f ON p.id_foto = f.ID_foto AND f.data_eliminazione IS NULL
      WHERE p.data_eliminazione IS NULL AND f.path_foto IS NOT NULL
      ORDER BY p.n_ordine ASC LIMIT 1'
-)->fetch_assoc();
+);
 $conn->close();
 
 render_head_pubblica('Home');
