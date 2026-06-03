@@ -2,9 +2,10 @@
    main.js  —  script unico per 3ElleOrienta
    Contiene:
      1. Inizializzazione mappa Leaflet (mini-mappa circolare fissa)
-     2. Marker singolo (click mappa) + invio filtro al server via GET
-     3. Filtro eventi per nome (ricerca in tempo reale sulle card)
-     4. Modal per i dettagli delle card
+     2. Marker rossi per ogni evento con coordinate
+     3. Marker singolo (click mappa) + invio filtro al server via GET
+     4. Filtro eventi per nome (ricerca in tempo reale sulle card)
+     5. Modal per i dettagli delle card
    ============================================================= */
 
 
@@ -39,7 +40,85 @@ if (!isNaN(initLat) && !isNaN(initLng)) {
 }
 
 
-/* ── 2. Marker singolo + filtro server ─────────────────────── */
+/* ── 2. Marker eventi (segnaposti rossi) ───────────────────── */
+
+// Icona rossa personalizzata per gli eventi
+const redIcon = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize:   [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor:[1, -34],
+    shadowSize: [41, 41]
+});
+
+// Raccoglie tutte le card con coordinate e piazza un marker rosso per ognuna
+const eventMarkers = [];
+
+document.querySelectorAll('.info-card[data-lat][data-lng]').forEach(card => {
+    const lat   = parseFloat(card.dataset.lat);
+    const lng   = parseFloat(card.dataset.lng);
+    const title = card.dataset.title || card.querySelector('.card-title')?.textContent || '';
+
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    const marker = L.marker([lat, lng], { icon: redIcon })
+        .addTo(map)
+        .bindPopup(`<strong>${title}</strong>`, { maxWidth: 200 });
+
+    // Click sul marker → apre il popup e il modal della card corrispondente
+    marker.on('click', () => {
+        card.click();
+    });
+
+    // Hover sulla card → evidenzia il marker aprendo il popup
+    card.addEventListener('mouseenter', () => marker.openPopup());
+    card.addEventListener('mouseleave', () => marker.closePopup());
+
+    eventMarkers.push({ marker, card });
+});
+
+/**
+ * Ricollega i marker Leaflet alle nuove card dopo un aggiornamento fetch.
+ */
+function rebindCardMarkers() {
+    eventMarkers.forEach(({ marker }) => map.removeLayer(marker));
+    eventMarkers.length = 0;
+
+    document.querySelectorAll('.info-card[data-lat][data-lng]').forEach(card => {
+        const lat   = parseFloat(card.dataset.lat);
+        const lng   = parseFloat(card.dataset.lng);
+        const title = card.dataset.title || '';
+        if (isNaN(lat) || isNaN(lng)) return;
+        const marker = L.marker([lat, lng], { icon: redIcon })
+            .addTo(map)
+            .bindPopup(`<strong>${title}</strong>`, { maxWidth: 200 });
+        marker.on('click', () => card.click());
+        card.addEventListener('mouseenter', () => marker.openPopup());
+        card.addEventListener('mouseleave', () => marker.closePopup());
+        eventMarkers.push({ marker, card });
+    });
+}
+
+// Se ci sono marker, adatta la vista della mappa per mostrarli tutti
+if (eventMarkers.length > 0) {
+    // Usa fitBounds solo se non c'è già un filtro geo attivo (che ha già centrato la mappa)
+    const urlParamsCheck = new URLSearchParams(window.location.search);
+    if (!urlParamsCheck.has('lat') || !urlParamsCheck.has('lng')) {
+        if (eventMarkers.length === 1) {
+            // Con un solo marker, fitBounds farebbe zoom eccessivo: usa setView con zoom fisso
+            const latlng = eventMarkers[0].marker.getLatLng();
+            setTimeout(() => map.setView(latlng, 11), 250);
+        } else {
+            const group = L.featureGroup(eventMarkers.map(m => m.marker));
+            const bounds = group.getBounds().pad(0.15);
+            setTimeout(() => map.fitBounds(bounds, { maxZoom: 13 }), 250);
+        }
+    }
+}
+
+
+/* ── 3. Marker singolo + filtro server ─────────────────────── */
 
 // Riferimenti globali al marker attivo e all'ultima posizione usata
 window.singleMarker = null;
@@ -82,6 +161,7 @@ function setSingleMarker(lat, lng, reload = true) {
         // aggiunge il raggio corrente dallo slider
         const r = document.getElementById('radius_slider');
         if (r) url.searchParams.set('r', r.value);
+        url.searchParams.delete('page'); // torna alla pagina 1 con il nuovo filtro
         window.location.href = url.toString();
     }
 }
@@ -105,6 +185,9 @@ if (btnReset) {
         url.searchParams.delete('lat');
         url.searchParams.delete('lng');
         url.searchParams.delete('r');
+        url.searchParams.delete('data');
+        url.searchParams.delete('cerca');
+        url.searchParams.delete('page');
         window.location.href = url.toString();
     });
 }
@@ -133,6 +216,7 @@ if (radiusSlider) {
         const url = new URL(window.location.href);
         if (url.searchParams.has('lat') && url.searchParams.has('lng')) {
             url.searchParams.set('r', radiusSlider.value);
+            url.searchParams.delete('page');
             window.location.href = url.toString();
         }
     });
@@ -144,7 +228,10 @@ const dateInput   = document.getElementById('filtro_data');
 const btnResetData = document.getElementById('btn_reset_data');
 
 if (dateInput) {
-    // Quando l'utente seleziona una data, ricarica la pagina con il parametro data
+    const openPicker = () => { try { dateInput.showPicker(); } catch (_) {} };
+    dateInput.addEventListener('click', openPicker);
+    dateInput.addEventListener('focus', openPicker);
+
     dateInput.addEventListener('change', function () {
         const url = new URL(window.location.href);
         if (dateInput.value) {
@@ -152,6 +239,7 @@ if (dateInput) {
         } else {
             url.searchParams.delete('data');
         }
+        url.searchParams.delete('page');
         window.location.href = url.toString();
     });
 }
@@ -160,6 +248,7 @@ if (btnResetData) {
     btnResetData.addEventListener('click', function () {
         const url = new URL(window.location.href);
         url.searchParams.delete('data');
+        url.searchParams.delete('page');
         window.location.href = url.toString();
     });
 }
@@ -169,52 +258,50 @@ const suggestionsEl = document.getElementById('suggestions');                  /
 const allCards      = Array.from(document.querySelectorAll('.info-card'));      // tutte le card eventi nel DOM
 
 /**
- * Filtra le card visibili in base alla query di ricerca.
- * Confronta il testo della query con il titolo di ogni card (case-insensitive).
- * Se nessuna card corrisponde, mostra un messaggio di "nessun risultato".
- *
- * @param {string} q - Testo inserito dall'utente nella barra di ricerca
+ * Aggiorna le card via fetch senza ricaricare la pagina.
+ * Usa ?fragment=1 su index.php per ottenere solo l'HTML delle card.
+ * Il focus sulla barra di ricerca rimane intatto.
  */
 function filterEvents(q) {
-    const ql = q.trim().toLowerCase();
-    let found = 0; // contatore delle card visibili dopo il filtro
-
-    allCards.forEach(card => {
-        const title   = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
-        const school  = (card.dataset.school  || '').toLowerCase();
-        const address = (card.dataset.address || '').toLowerCase();
-        const match = !ql || title.includes(ql) || school.includes(ql) || address.includes(ql);
-        card.style.display = match ? '' : 'none';
-        if (match) found++;
-    });
-
-    // Gestisce il messaggio "Nessun evento trovato"
-    let noResult = document.getElementById('no_result_msg');
-    if (found === 0) {
-        // Crea il messaggio solo se non esiste già nel DOM
-        if (!noResult) {
-            noResult = document.createElement('p');
-            noResult.id = 'no_result_msg';
-            noResult.className = 'text-muted text-center w-100 mt-3';
-            noResult.textContent = 'Nessun evento trovato.';
-            document.querySelector('.cards-wrapper')?.appendChild(noResult);
-        }
+    const url = new URL(window.location.href);
+    if (q.trim() !== '') {
+        url.searchParams.set('cerca', q.trim());
     } else {
-        // Rimuove il messaggio se ci sono risultati
-        noResult?.remove();
+        url.searchParams.delete('cerca');
     }
+    url.searchParams.delete('page');
+
+    // Aggiorna l'URL nella barra del browser senza ricaricare
+    window.history.replaceState({}, '', url.toString());
+
+    // Fetch del fragment
+    const fetchUrl = new URL(url.toString());
+    fetchUrl.searchParams.set('fragment', '1');
+
+    const wrapper = document.getElementById('events_section');
+    if (wrapper) wrapper.style.opacity = '0.4';
+
+    fetch(fetchUrl.toString())
+        .then(r => r.text())
+        .then(html => {
+            if (wrapper) {
+                wrapper.innerHTML = html;
+                wrapper.style.opacity = '';
+            }
+            rebindCardMarkers();
+        })
+        .catch(() => {
+            if (wrapper) wrapper.style.opacity = '';
+        });
 }
 
 if (searchEl) {
-    // Aggiorna il placeholder per riflettere la nuova funzione del campo
     searchEl.placeholder = 'Cerca evento…';
 
-    // Filtra le card ad ogni carattere digitato
     searchEl.addEventListener('input', function (e) {
         filterEvents(e.target.value);
     });
 
-    // Premi Escape per azzerare il filtro e tornare a mostrare tutte le card
     searchEl.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             searchEl.value = '';
@@ -234,22 +321,14 @@ const modalText        = document.getElementById('modalText');
 const modalDate        = document.getElementById('modalDate');
 const modalAddress     = document.getElementById('modalAddress');
 const modalOrario      = document.getElementById('modalOrario');
+const modalSchool      = document.getElementById('modalSchool');
+const modalSchoolAddress = document.getElementById('modalSchoolAddress');
 const modalPrenotabile = document.getElementById('modalPrenotabile');
 
 /**
  * Apre il modal con i dati dell'evento selezionato.
- * Popola dinamicamente tutti i campi (immagine, titolo, testo, data, ecc.).
- *
- * @param {string} imgSrc      - URL dell'immagine della card
- * @param {string} title       - Titolo dell'evento
- * @param {string} text        - Descrizione breve dell'evento
- * @param {string} date        - Data formattata (gg/mm/aaaa)
- * @param {string} address     - Indirizzo dell'evento
- * @param {string} oraInizio   - Orario di inizio (HH:MM)
- * @param {string} oraFine     - Orario di fine (HH:MM)
- * @param {string} prenotabile - '1' se prenotabile, '0' altrimenti
  */
-function openCardModal(imgSrc, title, text, date, address, oraInizio, oraFine, prenotabile) {
+function openCardModal(imgSrc, title, text, date, address, oraInizio, oraFine, prenotabile, school, schoolAddress) {
     if (!cardModal) return;
 
     // Popola immagine e testi principali
@@ -275,6 +354,20 @@ function openCardModal(imgSrc, title, text, date, address, oraInizio, oraFine, p
         modalOrario.innerHTML = '';
     }
 
+    // Nome scuola
+    if (modalSchool) {
+        modalSchool.innerHTML = school
+            ? '<i class="bi bi-building"></i> ' + school
+            : '';
+    }
+
+    // Indirizzo scuola
+    if (modalSchoolAddress) {
+        modalSchoolAddress.innerHTML = schoolAddress
+            ? '<i class="bi bi-signpost"></i> ' + schoolAddress
+            : '';
+    }
+
     // Badge prenotabilità: verde se prenotabile, grigio altrimenti
     if (prenotabile === '1') {
         modalPrenotabile.innerHTML = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Prenotabile</span>';
@@ -282,7 +375,6 @@ function openCardModal(imgSrc, title, text, date, address, oraInizio, oraFine, p
         modalPrenotabile.innerHTML = '<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Non prenotabile</span>';
     }
 
-    // Rende il modal visibile (aria-hidden gestisce anche la visibilità CSS)
     cardModal.setAttribute('aria-hidden', 'false');
 }
 
@@ -298,6 +390,8 @@ function closeCardModal() {
     modalDate.innerHTML        = '';
     modalAddress.innerHTML     = '';
     modalOrario.innerHTML      = '';
+    if (modalSchool)        modalSchool.innerHTML        = '';
+    if (modalSchoolAddress) modalSchoolAddress.innerHTML = '';
     modalPrenotabile.innerHTML = '';
 }
 
@@ -318,12 +412,14 @@ if (cardsWrapper) {
         openCardModal(
             imgEl   ? imgEl.src           : '',
             titleEl ? titleEl.textContent : '',
-            card.dataset.description || (textEl ? textEl.textContent : ''),
-            card.dataset.date        || '',
-            card.dataset.address     || '',
-            card.dataset.oraInizio   || '',
-            card.dataset.oraFine     || '',
-            card.dataset.prenotabile || '0'
+            card.dataset.description    || (textEl ? textEl.textContent : ''),
+            card.dataset.date           || '',
+            card.dataset.address        || '',
+            card.dataset.oraInizio      || '',
+            card.dataset.oraFine        || '',
+            card.dataset.prenotabile    || '0',
+            card.dataset.school         || '',
+            card.dataset.schoolAddress  || ''
         );
 
         // Se la card ha coordinate, sposta il marker sulla mappa
@@ -341,3 +437,46 @@ document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('cli
 
 // Chiude il modal premendo il tasto Escape
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCardModal(); });
+
+/* ── 7. Dropdown città marchigiane ─────────────────────────── */
+
+const selectCitta = document.getElementById('select_citta');
+
+if (selectCitta) {
+    // Se c'è già un filtro lat/lng attivo nell'URL, prova a selezionare la città corrispondente
+    const urlLat = urlParams.get('lat');
+    const urlLng = urlParams.get('lng');
+    if (urlLat && urlLng) {
+        for (const opt of selectCitta.options) {
+            if (!opt.value) continue;
+            const [oLat, oLng] = opt.value.split(',');
+            if (Math.abs(parseFloat(oLat) - parseFloat(urlLat)) < 0.01 &&
+                Math.abs(parseFloat(oLng) - parseFloat(urlLng)) < 0.01) {
+                selectCitta.value = opt.value;
+                break;
+            }
+        }
+    }
+
+    selectCitta.addEventListener('change', function () {
+        if (!this.value) {
+            // Opzione vuota → rimuovi filtro geografico
+            const url = new URL(window.location.href);
+            url.searchParams.delete('lat');
+            url.searchParams.delete('lng');
+            url.searchParams.delete('r');
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+            return;
+        }
+
+        const [lat, lng] = this.value.split(',').map(Number);
+        const r = document.getElementById('radius_slider');
+        const url = new URL(window.location.href);
+        url.searchParams.set('lat', lat.toFixed(6));
+        url.searchParams.set('lng', lng.toFixed(6));
+        url.searchParams.set('r', r ? r.value : 30);
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
+    });
+}

@@ -50,6 +50,12 @@
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span class="link-text">Progetti</span>
             </a>
+			
+			<a href="index.php?page=links"
+               class="nav-link <?= $page === 'links' ? 'active' : '' ?>">
+                <i class="bi bi-link-45deg"></i>
+                <span class="link-text">Link utili</span>
+            </a>
         </div>
         <?php endif; ?>
 

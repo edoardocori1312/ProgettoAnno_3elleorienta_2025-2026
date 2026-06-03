@@ -5,7 +5,6 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
 }
 
 :root {
@@ -25,11 +24,6 @@ body {
     background-color: var(--bg-page);
 }
 
-/* Compensa l'header fisso */
-body {
-    padding-top: calc(var(--header-h) + 12px);
-}
-
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -42,79 +36,17 @@ body {
     padding: 20px;
 }
 
-
-/* ── 3. Navbar / site-header ─────────────────────────────── */
-.site-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--header-h);
-    padding: 6px 16px;
-    background: #ffffff;
-    border-bottom: 3px solid var(--brand-dark);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, .08);
-    z-index: 10002;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-height: 76px;
-    overflow: hidden;
-}
-
-.site-header .logo,
-.site-header .navbar-brand img {
-    display: block;
-    max-height: 48px;
-    height: auto;
-    width: auto;
-    max-width: 220px;
-    object-fit: contain;
-}
-
-.logo-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* Hover link navbar */
-.site-header .nav-link:hover,
-.site-header .nav-link:focus {
-    background-color: #f0f4f6;
-    color: var(--brand-dark) !important;
-}
-
-/* Toggler mobile */
-.site-header .navbar-toggler {
-    border-color: rgba(0, 0, 0, .2);
-}
-
 .hero-banner {
-    position: relative;
-    /* serve come riferimento per il titolo */
     width: 100%;
-    max-height: 400px;
-    overflow: hidden;
-    line-height: 0;
-}
-
-.hero-banner img {
-    width: 100%;
-    height: 400px;
-    filter: brightness(50%); 
-    transition: filter 0.3s ease;
-    object-fit: cover;
-    display: block;
-}
-
-/* Titolo sovrapposto in basso a sinistra */
-.hero-banner .page-title-wrapper {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 24px;
-    line-height: 1.2;
+    background: linear-gradient(135deg, #2A5A5A 0%, #1D7A70 100%);
+    background-color: #1D7A70;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    padding: 60px 20px;
+    text-align: center;
 }
 
 .hero-banner .banner-wrapper {
@@ -124,28 +56,19 @@ body {
 }
 
 .hero-banner h1 {
-    display: inline-block;
-    color: white;
+    color: #fff;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 3.8rem;
-    font-weight: 1000;
-    margin: 0;
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin: 0 0 10px;
     letter-spacing: .02em;
-    padding-left: 10px;
-    border-left: 6px solid var(--brand-orange);
-    line-height: 1;
+}
 
-    @media (max-width: 600px) {
-        .hero-banner h1 {
-            font-size: 2.4rem;
-            padding-left: 12px;
-            border-left-width: 4px;
-        }
-
-        .hero-banner .page-title-wrapper {
-            bottom: 16px;
-        }
-    }
+.hero-subtitle {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1rem;
+    margin: 0;
+    opacity: 8;
 }
 
 
@@ -165,14 +88,37 @@ body {
     text-decoration: underline;
 }
 
-/* ── 4. Search container ─────────────────────────────────── */
+/* ── 4. Layout 3 colonne ─────────────────────────────────── */
+
+.three-col-layout {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 760px) 1fr;
+    gap: 0;
+    align-items: start;
+    width: 100%;
+}
+
+
+/* Colonna centrale: card */
+.col-center {
+    padding: 0 24px;
+    min-width: 0;
+}
+
+/* Colonna destra: filtri, stessa larghezza della sinistra */
+.col-right {
+    padding: 8px 24px 0 8px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+}
+
+/* Search nella sidebar */
 .search-container {
     position: relative;
     width: 100%;
-    max-width: 420px;
-    margin: -8px 20px 16px auto;
-    padding-right: 12px;
-    padding-top: 8px;
+    margin-bottom: 12px;
 }
 
 .search-container .input-group {
@@ -184,21 +130,28 @@ body {
     overflow: auto;
 }
 
+/* Su schermi stretti: torna a 1 colonna */
+@media (max-width: 1024px) {
+    .three-col-layout {
+        grid-template-columns: 1fr;
+    }
+    .col-left,
+    .col-right { display: none !important; }
+    .col-center { padding: 0 12px; }
+}
+
 
 /* ── 5. Cards wrapper & info-card ────────────────────────── */
 .cards-wrapper {
-    max-width: 1100px;
-    margin: 20px auto 36px auto;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 0 12px;
+    padding: 0 0 20px 0;
 }
 
 
 .info-card {
-    width: 460px;
+    width: 100%;
     min-height: 220px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
     border: 1px solid #e9ecef;
@@ -322,9 +275,8 @@ body {
 
 #map {
     position: relative;
-    padding: 10px 14px;
-    --mm-size: 200px;
-    width: 350px;
+    --mm-size: 240px;
+    width: 100%;
     height: var(--mm-size);
     border-radius: 0%;
     margin-bottom: 20px;
@@ -361,11 +313,7 @@ body {
 }
 
 /* ── 7b. Container mappa + slider raggio ─────────────────── */
-.map-container {
-    margin-left: auto;
-    margin-right: 20px;
-    width: 350px;
-}
+/* map-container non più usato, #map è diretto in col-right */
 
 .radius-control {
     padding: 10px 14px;
@@ -463,152 +411,120 @@ body {
     cursor: pointer;
 }
 
-/* Nascondi tutto il container insieme alla mappa su mobile */
-@media (max-width: 1024px) {
-    .map-container { display: none !important; }
-}
 
-
-/* ── 8. Footer ───────────────────────────────────────────── */
-.footer {
-    background: var(--brand-dark);
-    padding: 48px 40px 24px;
-}
-
-.footer__inner {
-    max-width: 1100px;
-    margin: 0 auto;
+/* ── 9b. Paginazione ─────────────────────────────────────── */
+.pagination-nav {
     display: flex;
-    gap: 48px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.footer__brand {
-    flex: 1;
-    min-width: 220px;
-}
-
-.footer__logo {
-    height: 48px;
-    margin-bottom: 16px;
-}
-
-.footer__description {
-    color: var(--brand-light);
-    font-size: 14px;
-    line-height: 1.7;
-}
-
-.footer__col {
-    min-width: 140px;
-}
-
-.footer__col-title {
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    margin: 0 0 16px;
-}
-
-.footer__links {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.footer__links li,
-.footer__links a {
-    color: var(--brand-light);
-    font-size: 14px;
-    text-decoration: none;
-    transition: color .2s;
-}
-
-.footer__links a:hover {
-    color: #fff;
-}
-
-.footer__cta {
-    min-width: 180px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.footer__btn {
-    font-size: 14px;
-    font-weight: 500;
-    padding: 10px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    text-align: center;
-    transition: opacity .2s;
-}
-
-.footer__btn:hover {
-    opacity: .85;
-}
-
-.footer__btn--primary {
-    background: var(--brand-teal);
-    color: #fff;
-}
-
-.footer__btn--secondary {
-    background: var(--brand-orange);
-    color: #fff;
-}
-
-.footer__bottom {
-    max-width: 1100px;
-    margin: 32px auto 0;
-    border-top: 1px solid rgba(255, 255, 255, .1);
-    padding-top: 20px;
-    display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    gap: 6px;
     flex-wrap: wrap;
-    gap: 12px;
+    margin: 8px auto 4px;
+    padding: 0 12px;
 }
 
-.footer__copyright {
-    color: #4a5568;
-    font-size: 13px;
-}
-
-.footer__legal {
-    display: flex;
-    gap: 20px;
-}
-
-.footer__legal a {
-    color: #4a5568;
-    font-size: 13px;
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1.5px solid #dee2e6;
+    background: #fff;
+    color: var(--brand-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
     text-decoration: none;
-    transition: color .2s;
+    cursor: pointer;
+    transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
 }
 
-.footer__legal a:hover {
-    color: var(--brand-light);
+.page-btn:hover:not(.page-btn--disabled):not(.page-btn--active) {
+    background: var(--brand-light);
+    border-color: var(--brand-teal);
+    color: var(--brand-dark);
+    box-shadow: 0 2px 8px rgba(29, 173, 160, .18);
+}
+
+.page-btn--active {
+    background: var(--brand-teal);
+    border-color: var(--brand-teal);
+    color: #fff;
+    cursor: default;
+    box-shadow: 0 2px 8px rgba(29, 173, 160, .28);
+}
+
+.page-btn--disabled {
+    opacity: .38;
+    cursor: default;
+    pointer-events: none;
+}
+
+.page-btn--arrow {
+    font-size: 1rem;
+}
+
+.page-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 38px;
+    color: #6c757d;
+    font-size: 1.1rem;
+    letter-spacing: .05em;
+}
+
+.pagination-info {
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.82rem;
+    margin: 4px 0 28px;
+}
+
+/* ── Dropdown selezione città ────────────────────────────── */
+.citta-filter-control {
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--brand-dark);
+    background: #fff;
+}
+ 
+.citta-filter-control label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+ 
+.citta-filter-control .form-select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--brand-dark);
+    cursor: pointer;
+    background-color: #fff;
+}
+ 
+.citta-filter-control .form-select:focus {
+    outline: none;
+    border-color: var(--brand-teal);
+    box-shadow: 0 0 0 3px rgba(29, 173, 160, .15);
 }
 
 
 /* ── 9. Media query ──────────────────────────────────────── */
-@media (max-width: 1024px) {
-    #map {
-        display: none !important;
-    }
-}
+
 
 @media (max-width: 1000px) {
-    .info-card {
-        width: 100%;
-        max-width: 460px;
+    .cards-wrapper {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -629,6 +545,7 @@ body {
 
 @media (max-width: 600px) {
     .cards-wrapper {
+        grid-template-columns: 1fr;
         gap: 10px;
     }
 

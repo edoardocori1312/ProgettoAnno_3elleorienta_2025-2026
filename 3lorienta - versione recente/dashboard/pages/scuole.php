@@ -4,7 +4,8 @@
 
 
 
-
+include_once '../connessione/db.php';
+$conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
 
 
 // Ruolo e scuola dell'utente loggato
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'inser
     if ($is_scolastico) {
         $_SESSION['flash_msg']  = "Non hai i permessi per inserire una nuova scuola.";
         $_SESSION['flash_type'] = "danger";
-        header('Location: index.php?page=scuole');
+        echo "<script>window.location.href = 'index.php?page=scuole';</script>";
         exit;
     }
 
@@ -70,6 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'inser
     // Validazione foto obbligatoria
     $foto_presente = isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK && $_FILES['foto']['size'] > 0;
     if (!$foto_presente) $errori[] = "La foto della scuola è obbligatoria.";
+	
+	var_dump ($errori);
 
     if (empty($errori)) {
         /* ── Geocoding lato server (fallback) ── */
@@ -101,9 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'inser
 
         /* ── Upload foto ── */
         $id_foto = null;
-        require_once '../../pictures/gestFoto.php';
+        include '../pictures/gestFoto.php';
         try {
-            $id_foto = uploadFoto($conn, $_FILES['foto'], $nome);
+            $id_foto = uploadFoto($conn, $_FILES['foto']);
         } catch (Exception $e) {
             $messaggio = "Errore upload foto: " . htmlspecialchars($e->getMessage());
             $tipo_msg  = "danger";
@@ -123,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'inser
                     $conn->close();
                     $_SESSION['flash_msg']  = "Scuola <strong>" . htmlspecialchars($nome) . "</strong> inserita con successo.";
                     $_SESSION['flash_type'] = "success";
-                    header('Location: index.php?page=scuole');
+                    echo "<script>window.location.href = 'index.php?page=scuole';</script>";
                     exit;
                 } else {
                     // Se l'inserimento scuola fallisce, annulla la foto appena caricata
@@ -154,7 +157,7 @@ if (($_GET['action'] ?? '') === 'elimina' && !empty($_GET['cod'])) {
     if ($is_scolastico) {
         $_SESSION['flash_msg']  = "Non hai i permessi per eliminare una scuola.";
         $_SESSION['flash_type'] = "danger";
-        header('Location: index.php?page=scuole');
+        echo "<script>window.location.href = 'index.php?page=scuole';</script>";
         exit;
     }
 
@@ -167,12 +170,12 @@ if (($_GET['action'] ?? '') === 'elimina' && !empty($_GET['cod'])) {
     if (!$row_check) {
         $_SESSION['flash_msg']  = "Scuola non trovata.";
         $_SESSION['flash_type'] = "warning";
-        header('Location: index.php?page=scuole');
+        echo "<script>window.location.href = 'index.php?page=scuole';</script>";
         exit;
     }
     $id_foto_da_eliminare = $row_check['id_foto'];
 
-    foreach (['scuole_ambiti', 'scuole_indirizzi'] as $tab) {
+    foreach (['Scuole_Ambiti', 'Scuole_Indirizzi'] as $tab) {
         $s = $conn->prepare("DELETE FROM $tab WHERE cod_scuola = ?");
         if ($s) { $s->bind_param("s", $cod_del); $s->execute(); $s->close(); }
     }
@@ -186,13 +189,13 @@ if (($_GET['action'] ?? '') === 'elimina' && !empty($_GET['cod'])) {
 
         // Segna la foto come eliminata impostando data_eliminazione
         if ($id_foto_da_eliminare) {
-            require_once '../../pictures/gestFoto.php';
+            require_once '../pictures/gestFoto.php';
             try { delFoto($conn, $id_foto_da_eliminare); } catch (Exception $e) {}
         }
         $conn->close();
         $_SESSION['flash_msg']  = "Scuola eliminata con successo.";
         $_SESSION['flash_type'] = "success";
-        header('Location: index.php?page=scuole');
+        echo "<script>window.location.href = 'index.php?page=scuole';</script>";
         exit;
     } else {
         $messaggio = "Errore eliminazione: " . htmlspecialchars($conn->error);
@@ -299,12 +302,15 @@ $res_citta->free();
 
 <!-- ═══ BARRA DI RICERCA (solo ADMIN) ═══ -->
 <?php if ($is_admin): ?>
+<form method="GET" action="index.php?page=scuole" enctype="multipart/form-data">
+<input type="hidden" name="page" value="scuole">
 <div class="search-bar">
+
     <p class="section-title mb-3"><i class="bi bi-search me-1"></i> Ricerca Scuole</p>
     <div class="row g-3 align-items-end">
         <div class="col-md-4">
             <label class="form-label">Filtra per città</label>
-            <select id="f-citta" class="form-select form-select-sm">
+            <select name="id_citta" class="form-select form-select-sm">
                 <option value="0">— Tutte le città —</option>
                 <?php foreach ($citta_rows as $c): ?>
                 <option value="<?= $c['ID_citta'] ?>" <?= ($filtro_citta == $c['ID_citta']) ? 'selected' : '' ?>>
@@ -315,19 +321,23 @@ $res_citta->free();
         </div>
         <div class="col-md-5">
             <label class="form-label">Cerca per nome</label>
-            <input type="text" id="f-nome" class="form-control form-control-sm"
+            <input type="text" name="cerca" class="form-control form-control-sm"
                    placeholder="es. Liceo, IIS…" value="<?= htmlspecialchars($filtro_nome) ?>">
         </div>
         <div class="col-md-3 d-flex gap-2">
-            <button type="button" id="btn-filtra" class="btn btn-primary btn-sm w-100">
+            <button type="submit" id="btn-filtra" class="btn btn-primary btn-sm w-100">
                 <i class="bi bi-funnel-fill me-1"></i> Filtra
             </button>
-            <button type="button" id="btn-reset" class="btn btn-outline-secondary btn-sm" title="Azzera filtri">
+			            <button type="button" onclick="resetPage()" class="btn btn-outline-secondary btn-sm" title="Azzera filtri">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
+
     </div>
 </div>
+</form>
+
+
 <?php endif; // fine blocco ricerca ADMIN ?>
 
 <!-- ═══ TABELLA ELENCO ═══ -->
@@ -391,7 +401,7 @@ $res_citta->free();
                                         class="btn btn-outline-danger btn-sm btn-elimina-scuola"
                                         title="Elimina"
                                         data-nome="<?= htmlspecialchars($row['nome'], ENT_QUOTES) ?>"
-                                        data-url="scuole.php?action=elimina&cod=<?= urlencode($row['COD_meccanografico']) ?>&ajax=1">
+                                        data-url="index.php?action=elimina&cod=<?= urlencode($row['COD_meccanografico']) ?>&ajax=1">
                                     <i class="bi bi-trash-fill me-1"></i>Elimina
                                 </button>
                                 <?php endif; ?>
@@ -522,6 +532,12 @@ document.addEventListener('click', function (e) {
     document.getElementById('modalEliminaLink').href = btn.dataset.url;
     new bootstrap.Modal(document.getElementById('modalElimina')).show();
 });
+</script>
+<script>
+function resetPage() {
+    // Ricarica la pagina mantenendo solo l'URL base (senza parametri GET)
+    window.location.href = window.location.pathname;
+}
 </script>
 
 <?php

@@ -20,6 +20,7 @@ $allowedPages = [
     'progetti',
     'impostazioni',
     'scuola_modifica',
+	'links',
 ];
 
 if (!in_array($page, $allowedPages)) {
@@ -35,6 +36,7 @@ $pageTitles = [
     'progetti'        => 'Progetti',
     'impostazioni'    => 'Impostazioni',
     'scuola_modifica' => 'Modifica Scuola',
+	'links'			  => 'Link utili',
 ];
 
 $pageTitle = $pageTitles[$page] ?? ucfirst($page);
@@ -49,6 +51,7 @@ $pageTitle = $pageTitles[$page] ?? ucfirst($page);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="styles/style.css">
+	<link rel="stylesheet" href="styles/styleModal.css">
 </head>
 <body>
 

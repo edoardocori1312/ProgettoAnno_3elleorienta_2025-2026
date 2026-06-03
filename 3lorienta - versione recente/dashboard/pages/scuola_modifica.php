@@ -1,6 +1,7 @@
 <?php
 
-// $conn e sessione disponibili da index.php
+include("../../connessione/db.php");
+$conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
 
 if ($conn->connect_error) die("Errore connessione: " . $conn->connect_error);
 
@@ -79,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'modif
             $conn->close();
             $_SESSION['flash_msg']  = "Scuola <strong>" . htmlspecialchars($nome) . "</strong> aggiornata con successo.";
             $_SESSION['flash_type'] = "success";
-            header("Location: index.php?page=scuole"); exit;
+            header("Location: ../index.php?page=scuole"); exit;
         } else {
             // Se l'update fallisce e avevamo caricato una nuova foto, annullala
             if ($id_foto_nuovo !== null) {
@@ -135,7 +136,7 @@ $citta_list = $conn->query("SELECT ID_citta, nome, sigla_provincia FROM Citta OR
 
         <div class="card-panel">
             <p class="section-title"><i class="bi bi-pencil-fill me-1"></i> Dati Scuola</p>
-            <form method="POST" action="scuola_modifica.php?cod=<?= urlencode($cod) ?>" enctype="multipart/form-data">
+            <form method="POST" action="pages/scuola_modifica.php?cod=<?= urlencode($cod) ?>" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="modifica">
                 <input type="hidden" name="lat" id="lat_hidden" value="<?= htmlspecialchars($scuola['lat']) ?>">
                 <input type="hidden" name="lng" id="lng_hidden" value="<?= htmlspecialchars($scuola['lng']) ?>">

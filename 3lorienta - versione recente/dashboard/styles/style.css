@@ -231,6 +231,17 @@ body {
     margin-left: var(--sidebar-collapsed);
 }
 
+
+.col-12 img{
+	width: 100%;
+	object-fit: contain;
+}
+
+
+
+
+
+
 @media (max-width: 991.98px) {
 
     .sidebar {
@@ -282,39 +293,3 @@ body {
     .grid-third { grid-column: span 6; }
 }
 
-/* ===== SIDEBAR — nav-group (aggiunto) ===== */
-.sidebar .nav-group {
-    margin-bottom: 8px;
-}
-
-/* ===== ACTIVE INDICATOR ===== */
-.sidebar a.nav-link.active {
-    background-color: var(--sidebar-hover);
-    color: white;
-    border-left: 3px solid #3498db;
-    padding-left: 17px;
-}
-
-/* ===== PAGINA: titolo sezione ===== */
-.section-title {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #7f8c8d;
-    font-weight: 600;
-    margin-bottom: 16px;
-}
-
-/* ===== TABLE: stile uniforme ===== */
-.table th {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #7f8c8d;
-    font-weight: 600;
-}
-
-.table td {
-    font-size: 0.88rem;
-    vertical-align: middle;
-}
