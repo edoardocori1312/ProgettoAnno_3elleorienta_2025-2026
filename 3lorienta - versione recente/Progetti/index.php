@@ -1,8 +1,9 @@
 <?php
     session_start();
     include("../connessione/db.php");
-
-    $conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
+	include("../connessione/SostituisciLink.php");
+	$conn = new mysqli($HOSTDB, $USERDB, $PASSDB, $NOMEDB);
+	$conn->set_charset("utf8mb4");
 
     if($conn->connect_error) {
         die("Connessione non stabilita: " . $conn->connect_error);
@@ -29,21 +30,20 @@
             while($riga = $risultato->fetch_object()) {
                 $titolo = $riga->titolo ? htmlspecialchars($riga->titolo) : "Titolo Progetto";
                 $descrizione = $riga->descrizione ? htmlspecialchars($riga->descrizione) : "";
+				$descrizione = SostituisciLink(nl2br($descrizione));
                 $path_foto = ($riga->path_foto && trim($riga->path_foto) !== '') ? htmlspecialchars($riga->path_foto) : "img/placeholder.png";
 
-                // Layout a card ispirato allo screenshot
                 $htmlProgetti .= "
                 <article class='custom-card'>
                     <div class='custom-card-content'>
                         <h2 class='custom-card-title'>{$titolo}</h2>
-                        <div class='custom-card-desc'>{$descrizione}</div>
-                        
-                        <div class='custom-card-tags'>
-                            <span class='custom-card-tag'>PROGETTO FORMATIVO</span>
+
+                        <div class='custom-card-img'>
+                            <img src='{$path_foto}' alt='{$titolo}'>
                         </div>
-                    </div>
-                    <div class='custom-card-img'>
-                        <img src='{$path_foto}' alt='{$titolo}'>
+
+                        <div class='custom-card-desc'>{$descrizione}</div>  
+                    
                     </div>
                 </article>";
             }
@@ -65,11 +65,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <link rel="stylesheet" href="stile.css?v=<?php echo filemtime('stile.css'); ?>"> 
+    <link rel="stylesheet" href="stile.css"> 
 </head>
 <body>
 
-    <?php include("../navbar.html"); ?>
+    <?php include("navbar.html"); ?>
 
     <section class="hero-page">
         <h1>Progetti</h1>
@@ -83,6 +83,5 @@
     <?php include("../footer.html"); ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="gestioneNav.js"></script>
 </body>
 </html>

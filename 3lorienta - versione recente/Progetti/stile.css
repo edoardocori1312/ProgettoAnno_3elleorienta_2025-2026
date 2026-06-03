@@ -1,20 +1,13 @@
-/* =========================================
-   NUOVO DESIGN: STILE CARD E HERO BANNER
-   ========================================= */
-
 body, html {
-    background-color: #f8fcfb; /* Sfondo generale chiarissimo */
+    background-color: #f8fcfb; 
     color: #4a5568;
 }
 
-/* Banner superiore scuro */
 .hero-page {
     background: linear-gradient(135deg, #2A5A5A 0%, #1D7A70 100%);
     color: #ffffff;
     text-align: center;
     padding: 60px 20px;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
     margin-bottom: 50px;
 }
 
@@ -114,10 +107,11 @@ body, html {
 }
 
 .custom-card-img img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px; /* Leggero arrotondamento all'immagine */
-    object-fit: cover;
+    height: 130px;        /* altezza uniforme per tutte */
+    width: auto;          /* niente deformazione */
+    max-width: 100%;      /* non esce dal contenitore da 250px */
+    object-fit: contain;  /* immagine intera, non ritagliata */
+    border-radius: 8px;
 }
 
 /* Responsive per dispositivi mobili */
@@ -127,14 +121,8 @@ body, html {
         padding: 25px;
         gap: 25px;
     }
-    
+
     .custom-card-img {
-        width: 100%;
-        justify-content: flex-start;
-    }
-    
-    .custom-card-img img {
-        width: 100%;
-        max-height: 300px; /* Limita l'altezza su schermi piccoli */
+        width: 100%;   /* su mobile la card è in colonna: l'immagine sta centrata in tutta la larghezza */
     }
 }
