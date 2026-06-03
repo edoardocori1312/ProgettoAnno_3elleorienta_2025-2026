@@ -84,6 +84,36 @@ if (isset($_SESSION['flash_msg'])) {
 }
 ?>
 
+<!-- Barra ricerca -->
+
+        <div class="card shadow-sm mb-3 border-0">
+            <div class="card-body py-3">
+                <form method="POST" action="index.php">
+                <input type="hidden" name="page" value="utenti">
+
+                    <div class="row g-2 align-items-center">
+
+                        <div class="col-md-10 col-12">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                    <input type="text" name="parolaChiave" class="form-control" placeholder="Cerca per nome, email o ruolo…" value="<?= htmlspecialchars($ricerca) ?>" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="col-md-2 col-12 d-grid">
+                            <button type="submit" class="btn btn-success fw-semibold">
+                                <i class="bi bi-search me-1"></i> Cerca
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <button class="btn btn-primary d-flex align-items-center gap-2"
             data-bs-toggle="modal" data-bs-target="#modalNuovoUtente">
@@ -101,29 +131,6 @@ if (isset($_SESSION['flash_msg'])) {
 <div class="content-grid">
     <div class="grid-full">
         <div class="card-panel">
-
-            <!-- Barra ricerca -->
-            <form method="GET" action="index.php" class="mb-3">
-                <input type="hidden" name="page" value="utenti">
-                <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white">
-                                <i class="bi bi-search text-secondary"></i>
-                            </span>
-                            <input type="text" name="parolaChiave" class="form-control"
-                                   placeholder="Cerca per nome, email o ruolo…"
-                                   value="<?= htmlspecialchars($ricerca) ?>" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-outline-primary">Cerca</button>
-                        <?php if ($ricerca): ?>
-                        <a href="index.php?page=utenti" class="btn btn-outline-secondary ms-1">Azzera</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </form>
 
             <!-- Tabella utenti -->
             <div class="table-responsive">
@@ -160,11 +167,12 @@ if (isset($_SESSION['flash_msg'])) {
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
 
-                                    <!-- Toggle stato -->
-                                    <form method="POST" action="index.php?page=utenti" style="display:inline;">
-                                        <input type="hidden" name="usDisattivato" value="<?= (int)$u['ID_utente'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Attiva / Disattiva">
-                                            <i class="bi bi-toggle-on"></i>
+                                    <!-- bottone attiva/disattiva -->
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="usDisattivato" value="<?= htmlspecialchars($u['ID_utente']); ?>">
+                                        <button type="submit" class="btn btn-sm <?= ($u['stato'] == 'ATTIVO') ? 'btn-outline-warning' : 'btn-outline-success'; ?>">
+                                            <i class="bi <?= ($u['stato'] == 'ATTIVO') ? 'bi-lock' : 'bi-unlock'; ?>"></i>
+                                            <?= ($u['stato'] == 'ATTIVO') ? 'Disattiva' : 'Attiva'; ?>
                                         </button>
                                     </form>
 
@@ -173,7 +181,7 @@ if (isset($_SESSION['flash_msg'])) {
                                           onsubmit="return confirm('Eliminare l\'utente <?= htmlspecialchars(addslashes($u['username'])) ?>?')">
                                         <input type="hidden" name="usEliminato" value="<?= (int)$u['ID_utente'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Elimina">
-                                            <i class="bi bi-trash-fill">Elimina</i>
+                                            <i class="bi bi-trash-fill"> Elimina</i>
                                         </button>
                                     </form>
 
