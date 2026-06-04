@@ -1,0 +1,44 @@
+/* ===== RICERCA AVANZATA ===== */
+
+        /* I radio sono funzionali ma invisibili */
+        #filtro-tipo-tutti,
+        #filtro-tipo-ter,
+        #filtro-tipo-sco {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+            pointer-events: none;
+		opacity:0% !important;
+        }
+
+        /* Blocchi condizionali nascosti di default */
+        .blocco-citta-filtro,
+        .blocco-scuola-filtro {
+            display: none;
+        }
+
+        /* Mostra il blocco città solo quando "Territoriale" è selezionato */
+        #filtro-tipo-ter:checked ~ .blocco-citta-filtro {
+            display: block;
+        }
+
+        /* Mostra il blocco scuola solo quando "Scolastico" è selezionato */
+        #filtro-tipo-sco:checked ~ .blocco-scuola-filtro {
+            display: block;
+        }
+
+        /* Stato attivo (evidenzia il bottone-label corrispondente al radio checked) */
+        #filtro-tipo-tutti:checked ~ .btn-tipo-filtro label[for="filtro-tipo-tutti"] {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+        #filtro-tipo-ter:checked ~ .btn-tipo-filtro label[for="filtro-tipo-ter"] {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+        #filtro-tipo-sco:checked ~ .btn-tipo-filtro label[for="filtro-tipo-sco"] {
+            background-color: #198754;
+            border-color: #198754;
+            color: #fff;
+        }
