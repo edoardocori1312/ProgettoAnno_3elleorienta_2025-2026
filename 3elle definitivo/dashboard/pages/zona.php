@@ -4,34 +4,35 @@
 
 require_once __DIR__ . '/backend/gestione_zone.php';
 
-// ── Flash message ─────────────────────────────────────────────────────────────
+
 $flash = null;
 if (isset($_SESSION['flash'])) {
     $flash = $_SESSION['flash'];
     unset($_SESSION['flash']);
 }
 
-// ── Azioni POST ───────────────────────────────────────────────────────────────
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['inserisci'])) {
-        $_SESSION['flash'] = creaZona($conn, $_POST['zona'] ?? '');
-        echo "<script>window.location.href = 'index.php?page=zona';</script>";
+        $_SESSION['flash'] = creaZona($conn, $_POST['zona'] ?? '', (int)($_POST['id_citta'] ?? 0));
+        header('Location: index.php?page=zona');
         exit();
 
     } elseif (isset($_POST['modifica'])) {
         $_SESSION['flash'] = aggiornaZona($conn, (int)($_POST['id'] ?? 0), $_POST['nome'] ?? '');
-        echo "<script>window.location.href = 'index.php?page=zona';</script>";
+        header('Location: index.php?page=zona');
         exit();
 
     } elseif (isset($_POST['id_zona'])) {
         $_SESSION['flash'] = rimuoviZona($conn, (int)$_POST['id_zona']);
-        echo "<script>window.location.href = 'index.php?page=zona';</script>";
+        header('Location: index.php?page=zona');
         exit();
     }
 }
 
-$zone = leggiZone($conn);
+$zone  = leggiZone($conn);
+$citta = leggiCitta($conn);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -119,6 +120,15 @@ $zone = leggiZone($conn);
                     <label class="form-label">Nome zona <span class="text-danger">*</span></label>
                     <input type="text" name="zona" class="form-control" required
                            placeholder="Es: Nord, Sud, Centro…">
+                    <label class="form-label mt-3">Assegna città (opzionale)</label>
+                    <select name="id_citta" class="form-select">
+                        <option value="0">— Nessuna —</option>
+                        <?php foreach ($citta as $c): ?>
+                            <option value="<?= (int)$c['ID_citta'] ?>">
+                                <?= htmlspecialchars($c['nome']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
