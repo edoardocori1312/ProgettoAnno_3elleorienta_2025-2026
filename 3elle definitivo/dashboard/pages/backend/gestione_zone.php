@@ -1,5 +1,15 @@
 <?php
-function creaZona(mysqli $conn, string $nome): array {
+function leggiCitta(mysqli $conn): array {
+    $result = $conn->query("SELECT ID_citta, nome FROM Citta ORDER BY nome ASC");
+    if (!$result) return [];
+    $citta = [];
+    while ($row = $result->fetch_assoc()) {
+        $citta[] = $row;
+    }
+    return $citta;
+}
+
+function creaZona(mysqli $conn, string $nome, int $id_citta = 0): array {
     $nome = trim($nome);
     if ($nome === '') {
         return ['tipo' => 'errore', 'msg' => 'Il nome della zona non può essere vuoto'];
@@ -19,10 +29,18 @@ function creaZona(mysqli $conn, string $nome): array {
     $stmt = $conn->prepare("INSERT INTO Zone (nome) VALUES (?)");
     $stmt->bind_param("s", $nome);
     $ok = $stmt->execute();
+    $newId = $conn->insert_id;
     $stmt->close();
-    return $ok
-        ? ['tipo' => 'successo', 'msg' => 'Zona "' . htmlspecialchars($nome) . '" aggiunta con successo']
-        : ['tipo' => 'errore',   'msg' => "Errore nell'inserimento della zona"];
+    if (!$ok) {
+        return ['tipo' => 'errore', 'msg' => "Errore nell'inserimento della zona"];
+    }
+    if ($id_citta > 0) {
+        $stmtCity = $conn->prepare("UPDATE Citta SET id_zona = ? WHERE ID_citta = ?");
+        $stmtCity->bind_param("ii", $newId, $id_citta);
+        $stmtCity->execute();
+        $stmtCity->close();
+    }
+    return ['tipo' => 'successo', 'msg' => 'Zona "' . htmlspecialchars($nome) . '" aggiunta con successo'];
 }
 
 function leggiZone(mysqli $conn): array {
