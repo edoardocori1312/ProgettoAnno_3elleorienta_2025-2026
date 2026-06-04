@@ -17,6 +17,9 @@ function creaZona(mysqli $conn, string $nome, int $id_citta = 0): array {
     if (strlen($nome) < 3) {
         return ['tipo' => 'errore', 'msg' => 'Il nome deve avere almeno 3 caratteri'];
     }
+    if ($id_citta === 0) {
+        return ['tipo' => 'errore', 'msg' => 'Devi selezionare una città'];
+    }
     $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM Zone WHERE LOWER(nome) = LOWER(?)");
     $stmtCheck->bind_param("s", $nome);
     $stmtCheck->execute();
