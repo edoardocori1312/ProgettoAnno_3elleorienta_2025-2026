@@ -91,8 +91,8 @@ if ($result && $row = $result->fetch_assoc()) {
       <div class="progetto-subtitle">Piattaforma 3elleorienta</div>
 
       <div class="progetto-buttons">
-        <a href="/Progetto3elleUnitoFrontend/orientati.php" class="btn-orientati">Orientati</a>
-        <a href="/Progetto3elleUnitoFrontend/eventi/index.php" class="btn-eventi">Eventi</a>
+        <a href="/Orientati/orientati.php" class="btn-orientati">Orientati</a>
+        <a href="/Eventi/eventi/index.php" class="btn-eventi">Eventi</a>
       </div>
     </div>
 
