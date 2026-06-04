@@ -20,12 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
 
     } elseif (isset($_POST['modifica'])) {
-        $esito = aggiornaZona($conn, (int)($_POST['id'] ?? 0), $_POST['nome'] ?? '');
-        $_SESSION['flash'] = $esito;
-        $dest = ($esito['tipo'] === 'errore')
-            ? 'index.php?page=zona&modifica=' . (int)$_POST['id']
-            : 'index.php?page=zona';
-        header("Location: $dest");
+        $_SESSION['flash'] = aggiornaZona($conn, (int)($_POST['id'] ?? 0), $_POST['nome'] ?? '');
+        header('Location: index.php?page=zona');
         exit();
 
     } elseif (isset($_POST['id_zona'])) {
@@ -39,6 +35,9 @@ $zone = leggiZone($conn);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-semibold mb-0">
+        <i class="bi bi-geo-fill me-2 text-secondary"></i>Zone
+    </h5>
     <button class="btn btn-primary d-flex align-items-center gap-2"
             data-bs-toggle="modal" data-bs-target="#modalAggiungiZona">
         <i class="bi bi-plus-lg"></i> Aggiungi zona
@@ -78,50 +77,23 @@ $zone = leggiZone($conn);
                             $id     = (int)$row['ID_zona'];
                             $nome   = htmlspecialchars($row['nome']);
                             $nomeJs = addslashes($row['nome']);
-                            $inEdit = isset($_GET['modifica']) && (int)$_GET['modifica'] === $id;
                         ?>
-                        <?php if ($inEdit): ?>
-                            <form id="form-mod-<?= $id ?>" method="POST" action="index.php?page=zona" style="display:none;">
-                                <input type="hidden" name="page" value="zona">
-                                <input type="hidden" name="id" value="<?= $id ?>">
-                                <input type="hidden" name="modifica" value="1">
-                            </form>
-                            <tr>
-                                <td><?= $id ?></td>
-                                <td>
-                                    <input type="text" name="nome" value="<?= $nome ?>"
-                                           class="form-control form-control-sm"
-                                           form="form-mod-<?= $id ?>" required>
-                                </td>
-                                <td class="text-center">
-                                    <button type="submit" form="form-mod-<?= $id ?>"
-                                            class="btn btn-outline-success btn-sm me-1" title="Salva">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                    <a href="index.php?page=zona"
-                                       class="btn btn-outline-secondary btn-sm" title="Annulla">
-                                        <i class="bi bi-x-lg"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php else: ?>
                             <tr>
                                 <td><?= $id ?></td>
                                 <td class="fw-semibold"><?= $nome ?></td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
-                                        <a href="index.php?page=zona&modifica=<?= $id ?>"
-                                           class="btn btn-sm btn-outline-primary" title="Modifica">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-danger" title="Elimina"
+                                        <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                                                onclick="apriModalModifica(<?= $id ?>, '<?= $nomeJs ?>')">
+                                            <i class="bi bi-pencil-fill"></i> Modifica
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
                                                 onclick="apriModalElimina(<?= $id ?>, '<?= $nomeJs ?>')">
-                                            <i class="bi bi-trash-fill"></i>
+                                            <i class="bi bi-trash-fill"></i> Elimina
                                         </button>
                                     </div>
                                 </td>
                             </tr>
-                        <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                     </tbody>
@@ -151,6 +123,35 @@ $zone = leggiZone($conn);
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
                     <button type="submit" name="inserisci" class="btn btn-success px-4">
+                        <i class="bi bi-floppy-fill me-1"></i>Salva
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Zona -->
+<div class="modal fade" id="modalModificaZona" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-light border-0">
+                <h6 class="modal-title fw-bold">
+                    <i class="bi bi-pencil-fill me-2"></i>Modifica Zona
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="index.php?page=zona">
+                <input type="hidden" name="page" value="zona">
+                <input type="hidden" name="modifica" value="1">
+                <input type="hidden" name="id" id="modal-modifica-id" value="">
+                <div class="modal-body">
+                    <label class="form-label">Nome zona <span class="text-danger">*</span></label>
+                    <input type="text" name="nome" id="modal-modifica-nome" class="form-control" required>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-floppy-fill me-1"></i>Salva
                     </button>
                 </div>
@@ -190,6 +191,12 @@ $zone = leggiZone($conn);
 </div>
 
 <script>
+function apriModalModifica(id, nome) {
+    document.getElementById('modal-modifica-id').value = id;
+    document.getElementById('modal-modifica-nome').value = nome;
+    new bootstrap.Modal(document.getElementById('modalModificaZona')).show();
+}
+
 function apriModalElimina(id, nome) {
     document.getElementById('modal-elimina-msg').textContent = 'Eliminare la zona "' + nome + '"?';
     document.getElementById('modal-id-zona').value = id;
