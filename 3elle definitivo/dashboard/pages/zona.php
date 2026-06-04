@@ -120,9 +120,9 @@ $citta = leggiCitta($conn);
                     <label class="form-label">Nome zona <span class="text-danger">*</span></label>
                     <input type="text" name="zona" class="form-control" required
                            placeholder="Es: Nord, Sud, Centro…">
-                    <label class="form-label mt-3">Assegna città (opzionale)</label>
-                    <select name="id_citta" class="form-select">
-                        <option value="0">— Nessuna —</option>
+                    <label class="form-label mt-3">Assegna città <span class="text-danger">*</span></label>
+                    <select name="id_citta" class="form-select" required>
+                        <option value="">— Seleziona una città —</option>
                         <?php foreach ($citta as $c): ?>
                             <option value="<?= (int)$c['ID_citta'] ?>">
                                 <?= htmlspecialchars($c['nome']) ?>
