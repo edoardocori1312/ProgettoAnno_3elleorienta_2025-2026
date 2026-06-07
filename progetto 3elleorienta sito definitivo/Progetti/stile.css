@@ -1,0 +1,141 @@
+body, html {
+    background-color: #f8fcfb; 
+    color: #4a5568;
+}
+
+.hero-page {
+    background: linear-gradient(135deg, #2A5A5A 0%, #1D7A70 100%);
+    color: #ffffff;
+    text-align: center;
+    padding: 60px 20px;
+    margin-bottom: 50px;
+}
+
+.hero-page h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.hero-page p {
+    font-size: 1.1rem;
+    font-weight: 300;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Contenitore della lista progetti */
+.lista-card-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* Spazio tra una card e l'altra */
+    margin-bottom: 80px;
+}
+
+/* Stile della singola Card */
+.custom-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    /* Leggerissima ombra per dare profondità */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); 
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-direction: column;
+    align-items: center;
+}
+
+.custom-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+/* Contenuto testuale */
+.custom-card-content {
+    flex: 1;
+    width: 100%;
+}
+
+.custom-card-title {
+    color: #176B66;
+    font-size: 1.8rem;        /* era 1.3rem */
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;       /* titolo centrato */
+    margin-top: 0;
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+}
+
+.custom-card-desc {
+    color: #555e6b;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+
+/* Area dei Badge (Tag in basso) */
+.custom-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.custom-card-tag {
+    background-color: #e8f5f3; /* Sfondo verdino chiaro */
+    border: 1px solid #bce1db; /* Bordo sottile verdino */
+    color: #176B66;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Immagine (sotto il titolo, sopra la descrizione) */
+.custom-card-img {
+    width: 100%;
+    max-width: 764px;
+    margin: 0 auto 25px; /* centrata + spazio prima della descrizione */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-card-img img {
+    width: 100%;
+    max-width: 764px;
+    height: 150px;        /* banner 764x150 */
+    object-fit: cover;    /* riempie tutto il riquadro */
+    border-radius: 8px;
+}
+
+/* Responsive per dispositivi mobili */
+@media (max-width: 768px) {
+    .custom-card {
+        flex-direction: column;
+        padding: 25px;
+        gap: 25px;
+    }
+
+    .custom-card-img {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .custom-card-img img {
+        width: 100%;
+        height: 120px;        /* un po' più bassa sul telefono */
+        object-fit: cover;
+        border-radius: 8px;
+    }
+}

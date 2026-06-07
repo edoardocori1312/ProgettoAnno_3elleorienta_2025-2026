@@ -1,0 +1,258 @@
+/* ===========================
+   RESET & BASE
+=========================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f0f4f3;
+}
+
+
+.hero-banner {
+    background: linear-gradient(135deg, #2A5A5A 0%, #1D7A70 100%);
+    background-color: #1D7A70;
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin-bottom: 50px;
+}
+
+.hero-banner .banner-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.hero-banner h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    text-align: center;
+}
+.hero-banner p  { opacity: .8; font-size: 1rem; }
+
+.hero-subtitle {
+    color: rgba(255, 255, 255, 0.88);
+    opacity: .8; font-size: 1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+
+/* Frecce carousel */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.45);
+  border-radius: 50%;
+  padding: 1rem;
+  background-size: 50%;
+}
+
+/* ===========================
+   SEZIONE PROGETTO
+=========================== */
+.section-progetto {
+  background: #fff;
+  padding: 60px 20px 50px;
+  text-align: center;
+}
+
+.section-progetto h3 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0d2c3e;
+  margin-bottom: 44px;
+}
+
+.progetto-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  flex-wrap: wrap;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Logo grande a sinistra */
+.progetto-logo img {
+  max-width: 240px;
+  width: 100%;
+  height: auto;      /* proporzionale, mai stirato */
+}
+
+.progetto-text {
+  text-align: left;
+}
+
+/* Titolo SVELATI su sfondo giallo */
+.progetto-title {
+  display: inline-block;
+  background: #FFE600;
+  color: #0d2c3e;
+  font-size: 2.4rem;
+  font-weight: 900;
+  padding: 3px 14px;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+/* Sottotitolo su sfondo giallo */
+.progetto-subtitle {
+  display: inline-block;
+  background: #FFE600;
+  color: #0d2c3e;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  margin-bottom: 36px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Pulsanti affiancati */
+.progetto-buttons {
+  display: flex;
+  gap: 24px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.btn-orientati {
+  background: #1DADA0;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 38px;
+  border-radius: 5px;
+  text-decoration: none;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.btn-eventi {
+  background: #4CAF50;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 38px;
+  border-radius: 5px;
+  text-decoration: none;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.btn-orientati:hover,
+.btn-eventi:hover {
+  opacity: 0.85;
+  color: #fff;
+}
+
+/* ===========================
+   SEZIONE AMBITI
+=========================== */
+.section-ambiti {
+  background: #f0f4f3;
+  padding: 52px 20px;
+}
+
+.section-ambiti h3 {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0d2c3e;
+  margin-bottom: 36px;
+}
+
+.ambiti-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.ambito-card {
+  background: #fff;
+  border: 1px solid #dde3e0;
+  border-radius: 8px;
+  padding: 30px 20px;
+  text-align: center;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.ambito-card:hover {
+  box-shadow: 0 6px 20px rgba(29, 173, 160, 0.18);
+  transform: translateY(-3px);
+}
+
+.ambito-card i {
+  font-size: 2.1rem;
+  color: #1DADA0;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.ambito-card h4 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0d2c3e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 768px) {
+  .hero-caption {
+    white-space: normal;
+    text-align: center;
+    width: 90%;
+    left: 5%;
+    transform: none;
+    padding: 14px 20px;
+  }
+
+  .hero-caption h2 {
+    font-size: 1.3rem;
+  }
+
+  .progetto-inner {
+    flex-direction: column;
+    gap: 30px;
+    text-align: center;
+  }
+
+  .progetto-text {
+    text-align: center;
+  }
+
+  .progetto-buttons {
+    justify-content: center;
+  }
+
+  .footer__inner {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .footer {
+    padding: 40px 20px 20px;
+  }
+}
