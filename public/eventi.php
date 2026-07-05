@@ -56,6 +56,33 @@ render_navbar_pubblica('eventi.php');
     <!-- Mappa eventi territoriali -->
     <?php if (!empty($eventiMappa)): ?>
     <h2 class="sez-title">Mappa eventi territoriali</h2>
+
+    <!-- Ricerca per luogo: mostra solo gli eventi entro il raggio scelto -->
+    <div class="row g-2 align-items-center mb-3">
+        <div class="col-12 col-md-5">
+            <input type="text" id="cerca-luogo" class="form-control"
+                   placeholder="Cerca una città o un indirizzo...">
+        </div>
+        <div class="col-6 col-md-2">
+            <select id="raggio-km" class="form-select" title="Raggio di ricerca">
+                <option value="10" selected>10 km</option>
+                <option value="25">25 km</option>
+                <option value="50">50 km</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-auto">
+            <button type="button" id="btn-cerca-luogo" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i>Cerca
+            </button>
+            <button type="button" id="btn-reset-mappa" class="btn btn-outline-secondary">
+                Mostra tutti
+            </button>
+        </div>
+        <div class="col-12">
+            <small id="stato-ricerca" class="text-muted"></small>
+        </div>
+    </div>
+
     <div id="mappa-eventi" class="mb-5"></div>
     <?php endif; ?>
 
@@ -133,15 +160,98 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[c]));
 
+// Teniamo i riferimenti ai marker per poterli filtrare con la ricerca per luogo
+const marcatori = [];
 eventiMappa.forEach(ev => {
     if (!ev.lat || !ev.lng) return;
-    L.marker([ev.lat, ev.lng])
+    const marker = L.marker([ev.lat, ev.lng])
         .addTo(mappa)
         .bindPopup(
             '<strong>' + esc(ev.titolo) + '</strong><br>' +
             esc(ev.desc) + '<br>' +
             '<small>' + esc(ev.inizio) + ' · ' + esc(ev.citta) + '</small>'
         );
+    marcatori.push({ lat: ev.lat, lng: ev.lng, marker: marker });
+});
+
+// ── Ricerca per luogo e filtro per distanza ─────────────────────────────────
+const inputLuogo   = document.getElementById('cerca-luogo');
+const statoRicerca = document.getElementById('stato-ricerca');
+let markerRicerca  = null; // segnaposto del luogo cercato
+let cerchioRaggio  = null; // cerchio che visualizza il raggio scelto
+
+// Distanza in km tra due coordinate (formula di haversine)
+function distanzaKm(lat1, lng1, lat2, lng2) {
+    const R = 6371; // raggio terrestre in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function cercaLuogo() {
+    const testo = inputLuogo.value.trim();
+    if (!testo) return;
+    statoRicerca.textContent = 'Ricerca in corso...';
+    const q = encodeURIComponent(testo + ', Italia');
+    fetch('https://nominatim.openstreetmap.org/search?q=' + q + '&format=json&limit=1', {
+        headers: { 'Accept-Language': 'it' }
+    })
+    .then(r => r.json())
+    .then(dati => {
+        if (dati.length === 0) {
+            statoRicerca.textContent = 'Luogo non trovato.';
+            return;
+        }
+        const raggio = parseInt(document.getElementById('raggio-km').value, 10);
+        filtraPerDistanza(parseFloat(dati[0].lat), parseFloat(dati[0].lon), raggio, dati[0].display_name);
+    })
+    .catch(() => statoRicerca.textContent = 'Errore nella ricerca.');
+}
+
+function filtraPerDistanza(lat, lng, raggio, nomeLuogo) {
+    let visibili = 0;
+    marcatori.forEach(m => {
+        if (distanzaKm(lat, lng, m.lat, m.lng) <= raggio) {
+            m.marker.addTo(mappa);
+            visibili++;
+        } else {
+            mappa.removeLayer(m.marker);
+        }
+    });
+
+    if (markerRicerca) mappa.removeLayer(markerRicerca);
+    if (cerchioRaggio) mappa.removeLayer(cerchioRaggio);
+    markerRicerca = L.marker([lat, lng], { opacity: 0.7 })
+        .addTo(mappa)
+        .bindPopup(esc(nomeLuogo));
+    cerchioRaggio = L.circle([lat, lng], {
+        radius: raggio * 1000,
+        color: '#1DADA0',
+        fillOpacity: 0.08
+    }).addTo(mappa);
+    mappa.fitBounds(cerchioRaggio.getBounds());
+
+    statoRicerca.textContent = visibili === 0
+        ? 'Nessun evento entro ' + raggio + ' km. Prova ad allargare il raggio.'
+        : visibili + (visibili === 1 ? ' evento trovato' : ' eventi trovati') + ' entro ' + raggio + ' km.';
+}
+
+function mostraTutti() {
+    marcatori.forEach(m => m.marker.addTo(mappa));
+    if (markerRicerca) { mappa.removeLayer(markerRicerca); markerRicerca = null; }
+    if (cerchioRaggio) { mappa.removeLayer(cerchioRaggio); cerchioRaggio = null; }
+    inputLuogo.value = '';
+    statoRicerca.textContent = '';
+    mappa.setView([43.5, 13.0], 9); // vista iniziale
+}
+
+document.getElementById('btn-cerca-luogo').addEventListener('click', cercaLuogo);
+document.getElementById('btn-reset-mappa').addEventListener('click', mostraTutti);
+inputLuogo.addEventListener('keydown', e => {
+    if (e.key === 'Enter') cercaLuogo();
 });
 </script>
 <?php endif; ?>
