@@ -238,49 +238,6 @@ render_topbar_admin($titolo);
     </div>
 </div>
 
-<script>
-// ── JS Nominatim geocoding ──────────────────────────────────────────────────
-let geoTimer = null;
-
-function geocodificaNominatim() {
-    const via    = document.getElementById('via').value.trim();
-    const civico = document.getElementById('n_civico').value.trim();
-    const citta  = document.getElementById('id_citta');
-    const nomeCitta = citta.options[citta.selectedIndex]?.text ?? '';
-    const stato  = document.getElementById('geo_stato');
-
-    if (!via || !civico || citta.value === '') return;
-
-    stato.textContent = 'Ricerca coordinate...';
-    const q = encodeURIComponent(via + ' ' + civico + ', ' + nomeCitta + ', Italia');
-    fetch('https://nominatim.openstreetmap.org/search?q=' + q + '&format=json&limit=1', {
-        headers: { 'Accept-Language': 'it' }
-    })
-    .then(r => r.json())
-    .then(dati => {
-        if (dati.length > 0) {
-            const lat = parseFloat(dati[0].lat);
-            const lng = parseFloat(dati[0].lon);
-            document.getElementById('lat_hidden').value  = lat;
-            document.getElementById('lng_hidden').value  = lng;
-            document.getElementById('lat_display').value = lat.toFixed(6);
-            document.getElementById('lng_display').value = lng.toFixed(6);
-            stato.textContent = 'Coordinate trovate.';
-        } else {
-            stato.textContent = 'Indirizzo non trovato (le coordinate verranno cercate lato server).';
-        }
-    })
-    .catch(() => stato.textContent = 'Errore nella ricerca coordinate.');
-}
-
-['via', 'n_civico', 'id_citta'].forEach(function(id) {
-    document.getElementById(id).addEventListener('change', function() {
-        clearTimeout(geoTimer);
-        geoTimer = setTimeout(geocodificaNominatim, 600);
-    });
-});
-
-document.getElementById('btn_geo').addEventListener('click', geocodificaNominatim);
-</script>
+<script src="assets/js/geocoding.js"></script>
 
 <?php chiudi_pagina(); ?>

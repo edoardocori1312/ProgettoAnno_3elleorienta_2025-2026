@@ -17,11 +17,14 @@ function creaZona(mysqli $conn, string $nome): array {
     }
     $stmt = $conn->prepare('INSERT INTO Zone (nome) VALUES (?)');
     $stmt->bind_param('s', $nome);
-    $ok = $stmt->execute();
-    $stmt->close();
-    return $ok
-        ? ['tipo' => 'successo', 'msg' => 'Zona "' . $nome . '" aggiunta con successo.']
-        : ['tipo' => 'errore',   'msg' => "Errore nell'inserimento della zona."];
+    try {
+        $stmt->execute();
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        $stmt->close();
+        return ['tipo' => 'errore', 'msg' => "Errore nell'inserimento della zona."];
+    }
+    return ['tipo' => 'successo', 'msg' => 'Zona "' . $nome . '" aggiunta con successo.'];
 }
 
 function leggiZone(mysqli $conn): array {

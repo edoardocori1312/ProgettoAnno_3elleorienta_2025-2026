@@ -8,8 +8,14 @@ $conn = db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['elimina_id'])) {
     verifica_csrf();
-    $esito = eliminaUtente($conn, (int)$_POST['elimina_id']);
-    imposta_flash($esito['tipo'], $esito['msg']);
+    $idElimina = (int)$_POST['elimina_id'];
+    if ($idElimina === (int)$_SESSION['uid']) {
+        // Un admin non può eliminare il proprio account (si chiuderebbe fuori)
+        imposta_flash('errore', 'Non puoi eliminare il tuo stesso account.');
+    } else {
+        $esito = eliminaUtente($conn, $idElimina);
+        imposta_flash($esito['tipo'], $esito['msg']);
+    }
     $conn->close();
     header('Location: utenti.php');
     exit;
@@ -76,10 +82,12 @@ render_topbar_admin('Utenti');
                                class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
+                            <?php if ($id !== (int)$_SESSION['uid']): ?>
                             <button class="btn btn-outline-danger btn-sm"
                                     onclick="apriElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($u['username']), ENT_QUOTES, 'UTF-8') ?>)">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

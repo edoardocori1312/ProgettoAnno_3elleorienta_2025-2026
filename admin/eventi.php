@@ -56,18 +56,7 @@ render_topbar_admin('Eventi');
 
             <!-- Barra azioni -->
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                <?php if ($isAdmin): ?>
-                <ul class="nav nav-pills nav-sm me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link py-1 <?= $tab === 'attivi' ? 'active' : '' ?>"
-                           href="eventi.php">Attivi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link py-1 <?= $tab === 'eliminati' ? 'active' : '' ?>"
-                           href="eventi.php?tab=eliminati">Eliminati</a>
-                    </li>
-                </ul>
-                <?php endif; ?>
+                <?php if ($isAdmin) render_tab_attivi_eliminati('eventi.php', $tab); ?>
                 <a href="evento_form.php" class="btn btn-primary btn-sm ms-auto">
                     <i class="bi bi-plus-lg me-1"></i>Aggiungi evento
                 </a>
@@ -140,16 +129,7 @@ render_topbar_admin('Eventi');
                                 </button>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <?php if ($isAdmin): ?>
-                                <form method="POST" action="eventi.php" style="display:inline">
-                                    <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
-                                    <input type="hidden" name="ripristina_id" value="<?= $id ?>">
-                                    <button type="submit" class="btn btn-outline-success btn-sm"
-                                            title="Ripristina">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
-                                    </button>
-                                </form>
-                                <?php endif; ?>
+                                <?php if ($isAdmin) render_bottone_ripristina('eventi.php', $id); ?>
                             <?php endif; ?>
                         </td>
                     </tr>

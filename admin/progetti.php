@@ -43,16 +43,7 @@ render_topbar_admin('Progetti');
         <div class="card-panel">
 
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                <ul class="nav nav-pills nav-sm me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link py-1 <?= $tab === 'attivi' ? 'active' : '' ?>"
-                           href="progetti.php">Attivi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link py-1 <?= $tab === 'eliminati' ? 'active' : '' ?>"
-                           href="progetti.php?tab=eliminati">Eliminati</a>
-                    </li>
-                </ul>
+                <?php render_tab_attivi_eliminati('progetti.php', $tab); ?>
                 <?php if ($tab === 'attivi'): ?>
                 <a href="progetto_form.php" class="btn btn-primary btn-sm">
                     <i class="bi bi-plus-lg me-1"></i>Aggiungi progetto
@@ -106,15 +97,7 @@ render_topbar_admin('Progetti');
                                     onclick="apriElimina(<?= $id ?>, <?= htmlspecialchars(json_encode($p['titolo']), ENT_QUOTES, 'UTF-8') ?>)">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
-                            <?php else: ?>
-                            <form method="POST" action="progetti.php" style="display:inline">
-                                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
-                                <input type="hidden" name="ripristina_id" value="<?= $id ?>">
-                                <button type="submit" class="btn btn-outline-success btn-sm" title="Ripristina">
-                                    <i class="bi bi-arrow-counterclockwise"></i>
-                                </button>
-                            </form>
-                            <?php endif; ?>
+                            <?php else: render_bottone_ripristina('progetti.php', $id); endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

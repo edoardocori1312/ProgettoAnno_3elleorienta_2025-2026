@@ -66,11 +66,13 @@ function creaUtente(mysqli $conn, array $dati): array {
         'INSERT INTO Utenti (username, hash_password, email, tipo, stato, cod_scuola) VALUES (?, ?, ?, ?, ?, ?)'
     );
     $stmt->bind_param('ssssss', $username, $hash, $email, $tipo, $stato, $codScuola);
-    if (!$stmt->execute()) {
+    try {
+        $stmt->execute();
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
         $stmt->close();
         return ['tipo' => 'errore', 'msg' => 'Errore nel salvataggio.'];
     }
-    $stmt->close();
     return ['tipo' => 'successo', 'msg' => 'Utente "' . $username . '" creato.'];
 }
 

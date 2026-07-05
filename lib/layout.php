@@ -133,7 +133,7 @@ function render_scheda_evento(array $ev, bool $mostraLuogo = true): void { ?>
             <p class="text-muted mb-2" style="font-size:.85rem;">
                 <?= htmlspecialchars($ev['descrizione_breve']) ?>
             </p>
-            <div class="d-flex flex-wrap gap-3" style="font-size:.82rem;color:var(--muted);">
+            <div class="d-flex flex-wrap gap-3 text-muted" style="font-size:.82rem;">
                 <span>
                     <i class="bi bi-calendar3 me-1"></i>
                     <?= date('d/m/Y H:i', strtotime($ev['ora_inizio'])) ?>
@@ -319,6 +319,37 @@ function apriElimina(id, label) {
     new bootstrap.Modal(document.getElementById('modalElimina')).show();
 }
 </script>
+<?php }
+
+/**
+ * Tab "Attivi / Eliminati" condivise dalle liste admin con soft-delete
+ * (prima duplicate in eventi.php, progetti.php e links.php).
+ *
+ * @param string $pagina  pagina corrente (es. 'eventi.php')
+ * @param string $tab     'attivi' o 'eliminati'
+ */
+function render_tab_attivi_eliminati(string $pagina, string $tab): void { ?>
+                <ul class="nav nav-pills nav-sm me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link py-1 <?= $tab === 'attivi' ? 'active' : '' ?>"
+                           href="<?= htmlspecialchars($pagina) ?>">Attivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-1 <?= $tab === 'eliminati' ? 'active' : '' ?>"
+                           href="<?= htmlspecialchars($pagina) ?>?tab=eliminati">Eliminati</a>
+                    </li>
+                </ul>
+<?php }
+
+// Bottone "Ripristina" (form POST) mostrato nella tab Eliminati delle liste admin.
+function render_bottone_ripristina(string $action, int $id): void { ?>
+                                <form method="POST" action="<?= htmlspecialchars($action) ?>" style="display:inline">
+                                    <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
+                                    <input type="hidden" name="ripristina_id" value="<?= $id ?>">
+                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Ripristina">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </form>
 <?php }
 
 // True solo se l'URL ha schema http/https (blocca javascript:, data:, ecc.).

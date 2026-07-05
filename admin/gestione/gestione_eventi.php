@@ -198,16 +198,15 @@ function aggiornaEvento(mysqli $conn, int $id, array $dati, array $file, bool $i
         $lng = $geo['lng'];
     }
 
+    // La nuova foto viene solo caricata qui: associazione e rimozione della
+    // vecchia avvengono dopo l'UPDATE riuscito, così un errore non lascia
+    // l'evento con la foto cambiata ma i dati vecchi.
+    $nuovoIdFoto = null;
     if (foto_presente($file)) {
-        $vecchioIdFoto = $vecchio['id_foto'] ?? null;
         try {
-            $idFoto = uploadFoto($conn, $file, $titolo);
-            assocEventiFoto($conn, $idFoto, $id);
+            $nuovoIdFoto = uploadFoto($conn, $file, $titolo);
         } catch (Exception $e) {
             return ['tipo' => 'errore', 'msg' => 'Foto: ' . $e->getMessage()];
-        }
-        if ($vecchioIdFoto) {
-            delFoto($conn, (int)$vecchioIdFoto); // rimuove la vecchia foto sostituita
         }
     }
 
@@ -233,8 +232,22 @@ function aggiornaEvento(mysqli $conn, int $id, array $dati, array $file, bool $i
                           $oraInizio, $oraFine, $visibile, $prenot,
                           $via, $civico, $citta, $lat, $lng, $id);
     }
-    $stmt->execute();
-    $stmt->close();
+    try {
+        $stmt->execute();
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        $stmt->close();
+        pulisci_foto($conn, $nuovoIdFoto); // la foto appena caricata non serve più
+        return ['tipo' => 'errore', 'msg' => "Errore nell'aggiornamento dell'evento."];
+    }
+
+    if ($nuovoIdFoto) {
+        $vecchioIdFoto = $vecchio['id_foto'] ?? null;
+        assocEventiFoto($conn, $nuovoIdFoto, $id);
+        if ($vecchioIdFoto) {
+            delFoto($conn, (int)$vecchioIdFoto); // rimuove la vecchia foto sostituita
+        }
+    }
     return ['tipo' => 'successo', 'msg' => 'Evento aggiornato con successo.'];
 }
 

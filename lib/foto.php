@@ -47,8 +47,10 @@ function uploadFoto(mysqli $conn, array $file, string $prefisso = ''): int {
 
     $stmt = $conn->prepare('INSERT INTO Foto (path_foto) VALUES (?)');
     $stmt->bind_param('s', $pathDB);
-    if (!$stmt->execute()) {
-        unlink($percorso);
+    try {
+        $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        unlink($percorso); // niente file orfano se l'INSERT fallisce
         throw new Exception("Errore nell'inserimento in Foto.");
     }
     $id = $stmt->insert_id;
